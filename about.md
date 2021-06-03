@@ -2,14 +2,15 @@
 layout: page
 title: About
 permalink: /about/
+published: true
 ---
 
-Some information about you!
+Me me me
 
 ### More Information
 
-A place to include any other types of information that you'd like to include about yourself.
+More information about me
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[enginal@gmail.com](mailto:enginal@gmail.com)
