@@ -6,10 +6,10 @@ slug: enhancing-resume-with-llms
 featured: true
 draft: false
 tags:
-  - AI
+  - ai
   - career
   - resume
-  - LLMs
+  - llms
 description: Learn how to use Large Language Models (LLMs) to refine your resume and accurately reflect your contributions to past projects.
 ---
 
