@@ -6,7 +6,7 @@ export const SITE: Site = {
   profile: "https://satnaing.dev/",
   desc: "Personal blog of Engin Al",
   title: "Engin Al's Blog",
-  ogImage: "astropaper-og.jpg",
+  ogImage: "engin-og.jpg",
   lightAndDarkMode: true,
   postPerIndex: 4,
   postPerPage: 5,
