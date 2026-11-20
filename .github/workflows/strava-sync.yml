@@ -1,5 +1,6 @@
-# Daily Strava sync: refresh the cached activities and routes, commit them if anything changed,
-# then deploy. Builds themselves never call Strava.
+# Daily Strava sync: refresh the cached activities and routes and commit them if anything changed.
+# The commit to main triggers Cloudflare's Git integration, which rebuilds and deploys the site.
+# Builds themselves never call Strava.
 #
 # Repository secrets:
 #   STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN   (from `npm run strava:auth`)
@@ -22,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,24 +49,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
 
       - name: Commit changes
-        id: commit
         run: |
           git add src/_data/strava
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git config user.name "strava-sync"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "data: strava sync"
           git push
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
-  # A push made with GITHUB_TOKEN doesn't start other workflows, so deploy from here.
-  deploy:
-    needs: sync
-    if: ${{ needs.sync.outputs.changed == 'true' }}
-    uses: ./.github/workflows/deploy.yml
-    with:
-      ref: main
-    secrets: inherit

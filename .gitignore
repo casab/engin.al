@@ -17,5 +17,5 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# cf build output
-.cloudflare/
+# wrangler local state
+.wrangler/
