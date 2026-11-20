@@ -2,34 +2,46 @@
 layout: layouts/base.njk
 ---
 {%- import "macros.njk" as m -%}
-{%- set main = (channels or ["code"])[0] -%}
-{%- set nb = collections.projects | getPreviousCollectionItem(page) -%}
-{%- set na = collections.projects | getNextCollectionItem(page) -%}
-<article class="wrap ch-{{ main }}">
-  <header class="page-head detail-head">
-    <a class="label" href="/projects/">← projects</a>
-    <h1>{{ title }}</h1>
-    {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
-    {{ m.chips(channels, site.channels) }}
-    <ul class="facts">
-      <li><span class="label">year</span><span>{{ date | date("year") }}</span></li>
-      <li><span class="label">status</span><span>{{ status or "shipped" }}</span></li>
-      {%- if stack and stack.length %}<li><span class="label">stack</span><span>{{ stack | join(", ") }}</span></li>{% endif %}
-      {%- for l in links %}
-      <li><span class="label">{{ l.label or "link" }}</span><a href="{{ l.url }}" rel="noopener noreferrer">{{ l.url | replace("https://", "") | replace("www.", "") }}</a></li>
-      {%- endfor %}
-    </ul>
+{%- set main = line | lineInfo(site.lines) -%}
+{%- set sameLine = collections.projects | onLine(line) -%}
+{%- set newer = sameLine | getPreviousCollectionItem(page) -%}
+{%- set older = sameLine | getNextCollectionItem(page) -%}
+<article class="c-{{ line }}">
+  <header class="wrap lp-head split split--8-4">
+    <div>
+      <div class="lp-head__top">
+        <a class="tag" href="{{ main.url }}"><span class="bar" aria-hidden="true"></span>← {{ main.code }} {{ main.label }}</a>
+        {%- if draft %}<span class="draft">draft, not on the live site</span>{% endif %}
+      </div>
+      <h1 class="display">{{ title }}</h1>
+      {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
+    </div>
+    <dl class="credits credits--ruled">
+      <dt>Lines</dt><dd>{{ m.tags(lines, site.lines) }}</dd>
+      <dt>Year</dt><dd>{{ date | date("year") }}</dd>
+      <dt>Status</dt><dd>{{ status or "shipped" }}</dd>
+      {%- if stack and stack.length %}<dt>Built with</dt><dd>{{ stack | join(", ") }}</dd>{% endif %}
+      {%- for l in links %}<dt>{{ l.label or "Link" }}</dt><dd><a href="{{ l.url }}" rel="noopener noreferrer">{{ l.url | replace("https://", "") | replace("www.", "") }} ↗</a></dd>{% endfor %}
+    </dl>
   </header>
-  {%- if cover %}
-  <figure class="cover">
-    {% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 76rem) 76rem, 100vw", true %}
-  </figure>
-  {%- endif %}
-  <div class="prose">
-    {{ content | safe }}
+
+  <div class="wrap lp-body">
+    {%- if cover %}
+    <figure class="plate lp-cover">
+      {% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 90rem) 90rem, 100vw", true %}
+      {%- if cover_alt %}<figcaption><span class="mono">Plate 1</span><span>{{ cover_alt }}</span></figcaption>{% endif %}
+    </figure>
+    {%- endif %}
+    <div class="split split--3-9">
+      <p class="label">Liner notes</p>
+      <div class="prose">
+        {{ content | safe }}
+      </div>
+    </div>
   </div>
-  <nav class="pager" aria-label="More projects">
-    {%- if na %}<a href="{{ na.url }}"><span class="label">← newer</span>{{ na.data.title }}</a>{% else %}<span></span>{% endif %}
-    {%- if nb %}<a class="next" href="{{ nb.url }}"><span class="label">older →</span>{{ nb.data.title }}</a>{% endif %}
+
+  <nav class="wrap pager" aria-label="More on the {{ main.label }} line">
+    {%- if newer %}<a href="{{ newer.url }}"><span class="mono muted">← newer</span><span class="display">{{ newer.data.title }}</span></a>{% else %}<span></span>{% endif %}
+    {%- if older %}<a class="next" href="{{ older.url }}"><span class="mono muted">older →</span><span class="display">{{ older.data.title }}</span></a>{% endif %}
   </nav>
 </article>

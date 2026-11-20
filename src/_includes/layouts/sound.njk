@@ -1,27 +1,34 @@
 ---
 layout: layouts/base.njk
-channel: sound
 ---
 {%- import "macros.njk" as m -%}
-<article class="wrap ch-sound">
-  <header class="page-head detail-head">
-    <a class="label" href="/sound/">← sound</a>
-    <h1>{{ title }}</h1>
-    {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
-    <ul class="facts">
-      <li><span class="label">date</span><span>{{ date | date("long") }}</span></li>
-      <li><span class="label">kind</span><span>{{ kind }}</span></li>
-      {%- if venue %}<li><span class="label">where</span><span>{{ venue }}</span></li>{% endif %}
-      {%- if gear and gear.length %}<li><span class="label">gear</span><span>{{ gear | join(", ") }}</span></li>{% endif %}
-    </ul>
+{%- set main = line | lineInfo(site.lines) -%}
+<article class="c-{{ line }}">
+  <header class="wrap lp-head split split--8-4">
+    <div>
+      <div class="lp-head__top">
+        <a class="tag" href="{{ main.url }}"><span class="bar" aria-hidden="true"></span>← {{ main.code }} {{ main.label }}</a>
+        {%- if draft %}<span class="draft">draft, not on the live site</span>{% endif %}
+      </div>
+      <h1 class="display">{{ title }}</h1>
+      {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
+    </div>
+    <dl class="credits credits--ruled">
+      <dt>Lines</dt><dd>{{ m.tags(lines, site.lines) }}</dd>
+      <dt>Date</dt><dd>{{ date | date("long") }}</dd>
+      <dt>Kind</dt><dd>{{ kind }}</dd>
+      {%- if venue %}<dt>Where</dt><dd>{{ venue }}</dd>{% endif %}
+      {%- if gear and gear.length %}<dt>Gear</dt><dd>{{ gear | join(", ") }}</dd>{% endif %}
+    </dl>
   </header>
-  {%- if embed_url %}{{ m.player({ url: embed_url, title: title, bandcamp_id: bandcamp_id } | player) }}{% endif %}
-  {%- if cover %}
-  <figure class="cover">
-    {% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 76rem) 76rem, 100vw" %}
-  </figure>
-  {%- endif %}
-  <div class="prose">
-    {{ content | safe }}
+  <div class="wrap lp-body">
+    {%- if embed_url %}<div class="lp-cover">{{ m.player({ url: embed_url, title: title, bandcamp_id: bandcamp_id } | player) }}</div>{% endif %}
+    {%- if cover %}
+    <figure class="plate lp-cover">{% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 90rem) 90rem, 100vw" %}</figure>
+    {%- endif %}
+    <div class="split split--3-9">
+      <p class="label">Notes</p>
+      <div class="prose">{{ content | safe }}</div>
+    </div>
   </div>
 </article>

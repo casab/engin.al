@@ -7,3 +7,6 @@
 /archives/*                          /notes/                              301
 /search/                             /                                    301
 /rss.xml                             /feed.xml                            301
+
+# Round-one pages that became line pages
+/projects/                           /                                    301

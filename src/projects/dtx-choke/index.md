@@ -1,7 +1,7 @@
 ---
 title: "dtx-choke"
 date: 2026-11-01
-channels: [sound, circuits]
+lines: [sound, circuits]
 status: ongoing
 stack: ["Rust", "Win32", "Windows MIDI Services"]
 summary: "A tiny native app that makes Yamaha DTX PRO cymbal chokes work with Addictive Drums 2 in Ableton."

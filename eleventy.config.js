@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import markdownIt from "markdown-it";
 import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import { feedPlugin } from "@11ty/eleventy-plugin-rss";
-import { routeGeometry, weeklyTrace, sigil, channelWave } from "./src/_lib/signal.js";
+import { routeGeometry, weeklyTrace } from "./src/_lib/signal.js";
+import { buildNetwork, lineStations } from "./src/_lib/network.js";
 
 const TZ = "Europe/Istanbul";
 const SITE_URL = "https://engin.al/";
@@ -20,6 +21,13 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
 };
 
 const toDate = (d) => (d instanceof Date ? d : new Date(d));
+// path of a file inside a page bundle, relative to the input dir (for <img src> and links)
+const bundlePath = (file, inputPath) => {
+  if (!file) return "";
+  if (/^(https?:)?\//.test(file)) return file;
+  const dir = path.posix.dirname(inputPath.split(path.sep).join("/").replace(/^\.\//, "").replace(/^src\//, ""));
+  return "/" + path.posix.join(dir, file);
+};
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 export default function (eleventyConfig) {
@@ -39,7 +47,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "node_modules/@sveltia/cms/dist/sveltia-cms.js": "admin/sveltia-cms.js" });
   eleventyConfig.addPassthroughCopy({ "node_modules/@sveltia/cms/dist/chunks": "admin/chunks" }, noMaps);
   // full-size masters stay downloadable next to their page bundle
-  for (const dir of ["projects", "sound", "notes", "distance"]) {
+  for (const dir of ["projects", "sound", "notes", "distance", "stops"]) {
     eleventyConfig.addPassthroughCopy(`src/${dir}/**/*.{jpg,jpeg,png,webp,gif,svg}`);
   }
   eleventyConfig.addWatchTarget("src/assets/");
@@ -69,14 +77,64 @@ export default function (eleventyConfig) {
   const projects = (api) => published(api.getFilteredByGlob("src/projects/*/index.md")).sort(byDateDesc);
   const sound = (api) => published(api.getFilteredByGlob("src/sound/*/index.md")).sort(byDateDesc);
   const notes = (api) => published(api.getFilteredByGlob("src/notes/**/*.md")).sort(byDateDesc);
+  const stops = (api) => published(api.getFilteredByGlob("src/stops/*.md"));
 
   eleventyConfig.addCollection("projects", projects);
-  eleventyConfig.addCollection("featuredProjects", (api) => projects(api).filter((p) => p.data.featured));
   eleventyConfig.addCollection("sound", sound);
   eleventyConfig.addCollection("notes", notes);
   // Notes on top of synced Strava activities (src/distance/<activity-id>.md). They never render as pages.
   eleventyConfig.addCollection("distanceNotes", (api) => api.getFilteredByGlob("src/distance/*.md"));
   eleventyConfig.addCollection("feedItems", (api) => [...projects(api), ...sound(api), ...notes(api)].sort(byDateDesc));
+
+  // Every stop on the network: projects, recordings, milestones and races, as plain objects.
+  const readStrava = () => {
+    try { return JSON.parse(readFileSync("src/_data/strava/activities.json", "utf8")); } catch { return { activities: [] }; }
+  };
+  eleventyConfig.addWatchTarget("src/_data/strava/");
+  eleventyConfig.addCollection("stations", (api) => {
+    const fromItem = (item, kind, meta) => ({
+      id: item.url || item.fileSlug,
+      title: item.data.title,
+      short: item.data.short || null,
+      date: toDate(item.data.date),
+      lines: item.data.lines || [],
+      url: item.url || item.data.url || null,
+      kind,
+      meta,
+      summary: item.data.summary || item.data.note || "",
+      draft: !!item.data.draft,
+      featured: !!item.data.featured,
+      cover: item.data.cover ? bundlePath(item.data.cover, item.inputPath) : null,
+      coverAlt: item.data.cover_alt || "",
+      embed: item.data.embed_url || null,
+      bandcampId: item.data.bandcamp_id || null,
+      data: { status: item.data.status, stack: item.data.stack || [] },
+    });
+    const notesById = new Map(api.getFilteredByGlob("src/distance/*.md").map((n) => [String(n.data.strava_id || n.fileSlug), n]));
+    const races = (readStrava().activities || [])
+      .map((a) => ({ a, n: notesById.get(String(a.id)) }))
+      .filter(({ n }) => !(n && n.data.hidden))
+      .map(({ a, n }) => ({
+        id: `a${a.id}`,
+        title: (n && n.data.title) || a.name,
+        date: toDate(a.date),
+        lines: ["distance"],
+        url: `/distance/#a${a.id}`,
+        kind: a.sport === "ride" ? "ride" : "race",
+        meta: `${(a.distance_m / 1000).toFixed(1)} km`,
+        summary: "",
+        note: n ? n.content : "",
+        photo: n && n.data.photo ? bundlePath(n.data.photo, n.inputPath) : null,
+        photoAlt: (n && n.data.photo_alt) || "",
+        activity: a,
+      }));
+    return [
+      ...projects(api).map((p) => fromItem(p, "project", [p.data.stack && p.data.stack[0], toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
+      ...sound(api).map((p) => fromItem(p, "sound", [p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
+      ...stops(api).map((p) => fromItem(p, "stop", String(toDate(p.data.date).getUTCFullYear()))),
+      ...races,
+    ].sort((a, b) => b.date - a.date);
+  });
 
   // ---- filters ----
   eleventyConfig.addFilter("md", (s) => (s ? md.render(String(s)) : ""));
@@ -110,7 +168,6 @@ export default function (eleventyConfig) {
     const spk = a.moving_s / (a.distance_m / 1000);
     return `${Math.floor(spk / 60)}:${String(Math.round(spk % 60)).padStart(2, "0")} /km`;
   });
-  eleventyConfig.addFilter("withChannel", (items, ch) => (items || []).filter((i) => (i.data.channels || []).includes(ch)));
   eleventyConfig.addFilter("groupByYear", (items) => {
     const groups = new Map();
     for (const i of items || []) {
@@ -120,28 +177,10 @@ export default function (eleventyConfig) {
     }
     return [...groups.entries()];
   });
-  eleventyConfig.addFilter("channelInfo", (id, channels) => (channels || []).find((c) => c.id === id) || { id, ch: 0, label: id });
   // path of a file inside the page bundle, relative to the input dir (for <img src> and links)
-  eleventyConfig.addFilter("bundle", (file, inputPath) => {
-    if (!file) return "";
-    if (/^(https?:)?\//.test(file)) return file;
-    const dir = path.posix.dirname(inputPath.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^src\//, ""));
-    return "/" + path.posix.join(dir, file);
-  });
+  eleventyConfig.addFilter("bundle", bundlePath);
 
-  // ---- distance: Strava cache + hand-written notes ----
-  // activities.json is written by scripts/strava-sync.mjs; routes/<id>.json hold trimmed, simplified tracks.
-  eleventyConfig.addFilter("distanceLog", (strava, notesColl) => {
-    const list = (strava && strava.activities && strava.activities.activities) || [];
-    const byId = new Map((notesColl || []).map((n) => [String(n.data.strava_id || n.fileSlug), n]));
-    return list
-      .map((a) => {
-        const n = byId.get(String(a.id));
-        return { ...a, title: (n && n.data.title) || a.name, note: n ? n.content : "", hidden: !!(n && n.data.hidden), photo: n && n.data.photo, photoAlt: n && n.data.photo_alt, notePath: n && n.inputPath };
-      })
-      .filter((a) => !a.hidden)
-      .sort((a, b) => toDate(b.date) - toDate(a.date));
-  });
+  // ---- distance: Strava cache (scripts/strava-sync.mjs); routes/<id>.json hold trimmed, simplified tracks ----
   eleventyConfig.addFilter("route", (id, strava) => {
     const r = strava && strava.routes && strava.routes[String(id)];
     return r ? routeGeometry(r) : null;
@@ -150,8 +189,13 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("weeklyYears", (weekly) => Object.keys(weekly || {}).sort().reverse());
   eleventyConfig.addFilter("weeklyMax", (weekly) =>
     Math.max(1, ...Object.values(weekly || {}).flatMap((y) => [...(y.run || []), ...(y.ride || [])])));
-  eleventyConfig.addFilter("sigil", (seed) => sigil(seed));
-  eleventyConfig.addFilter("channelWave", (kind) => channelWave(kind));
+  // ---- the network ----
+  eleventyConfig.addFilter("network", (stations, lines) => buildNetwork(stations, lines));
+  eleventyConfig.addFilter("lineStations", (stations, lineId, lines) => lineStations(stations, lineId, lines));
+  eleventyConfig.addFilter("lineInfo", (id, lines) => (lines || []).find((l) => l.id === id) || { id, code: "", label: id, color: "#121212" });
+  eleventyConfig.addFilter("onLine", (items, id) => (items || []).filter((i) => ((i.data ? i.data.lines : i.lines) || []).includes(id)));
+  eleventyConfig.addFilter("interchanges", (stations) => (stations || []).filter((s) => (s.lines || []).length > 1));
+  eleventyConfig.addFilter("first", (arr) => (arr || [])[0]);
 
   // ---- media on R2 (media.engin.al) ----
   // src/_data/media.json (written by scripts/r2-upload.mjs) lists files that live in the R2 bucket.

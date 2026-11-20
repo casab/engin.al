@@ -1,14 +1,15 @@
 ---
 layout: layouts/base.njk
 ---
-<article class="narrow">
-  <header class="page-head">
-    <a class="label" href="/notes/">← notes</a>
-    <h1>{{ title }}</h1>
-    <p class="meta">{{ date | date("long") }}{% if tags and tags.length %} · {{ tags | join(" · ") }}{% endif %}</p>
+<article>
+  <header class="wrap page-head">
+    <a class="label" href="/notes/">← Notes</a>
+    <h1 class="display">{{ title }}</h1>
+    <p class="mono muted">{{ date | date("long") }}{% if tags and tags.length %} · {{ tags | join(" · ") }}{% endif %}</p>
     {%- if description %}<p class="lede">{{ description }}</p>{% endif %}
   </header>
-  <div class="prose">
-    {{ content | safe }}
+  <div class="wrap split split--3-9">
+    <span></span>
+    <div class="prose">{{ content | safe }}</div>
   </div>
 </article>

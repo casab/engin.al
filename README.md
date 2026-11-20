@@ -1,8 +1,8 @@
 # engin.al
 
-Personal site of Engin Al: **things that oscillate**. Code, circuits, sound and distance, shown as four channels of one oscilloscope.
+Personal site of Engin Al: **four lines, one network**. Code, circuits, sound and distance are four transit lines. Projects, recordings, milestones and races are stations, and work that crosses disciplines is an interchange.
 
-Static site built with [Eleventy](https://www.11ty.dev/), edited with [Sveltia CMS](https://sveltiacms.app/) at `/admin/`, deployed to Cloudflare as an assets-only Worker (`wrangler.jsonc`) through Cloudflare's Git integration. No framework, no trackers. The hero is a hand-written WebGL2 phosphor scope that also works as a tiny synth.
+Static site built with [Eleventy](https://www.11ty.dev/), edited with [Sveltia CMS](https://sveltiacms.app/) at `/admin/`, deployed to Cloudflare as an assets-only Worker (`wrangler.jsonc`) through Cloudflare's Git integration. No framework, no trackers. The network map is laid out at build time from the content (`src/_lib/network.js`) and ships as plain SVG; the line filter is pure CSS.
 
 ## Develop
 
@@ -21,17 +21,21 @@ Node 22.9+.
 
 | Path | What |
 |---|---|
-| `src/projects/<slug>/index.md` | a project; images next to it. `channels: [code, circuits, sound]`, first one sets the colour |
-| `src/sound/<slug>/index.md` | a live set, mix, track or release; `embed_url` becomes a click-to-load player |
+| `src/projects/<slug>/index.md` | a project; images next to it. `lines: [circuits, code]`: the first sets the colour, two or more make an interchange. `short:` is an optional map label |
+| `src/sound/<slug>/index.md` | a live set, mix, track or release (Sound line unless `lines` says otherwise); `embed_url` becomes a click-to-load player |
+| `src/stops/*.md` | milestones without a page of their own (a degree, a first gig, a new job): title, date, lines |
 | `src/distance/<strava-id>.md` | optional note/title/photo for a synced Strava activity, or `show: true` / `hidden: true` |
-| `src/notes/*.md` | occasional longer notes |
-| `src/_data/{now,about,rig,site}.json` | the Now page, About page, instrument list, site settings (all editable in the CMS) |
-| `src/_data/strava/` | Strava cache written by `scripts/strava-sync.mjs`, committed |
-| `src/_lib/signal.js` | build-time SVG geometry: route traces, elevation profiles, weekly waveforms, project sigils |
-| `src/assets/js/scope.js` | the WebGL2 oscilloscope (persistence + bloom), with a 2D-canvas fallback |
-| `src/assets/js/synth.js` | Web Audio synth that drives the scope with its real output (keys A–K, tap/drag on the scope) |
+| `src/notes/*.md` | occasional longer notes (not on the map, not in the menu) |
+| `src/_data/site.json` | the four lines (name, colour, description), menu, home intro, socials |
+| `src/_data/now.json` | the Now page and the departures board rows |
+| `src/_data/{about,rig}.json` | Network information (about) and the instrument list on the Sound line |
+| `src/_data/strava/` | Strava cache written by `scripts/strava-sync.mjs`, committed; races become Distance stations |
+| `src/_lib/network.js` | the map layout: one column per station by date, fixed lanes, 45° bends into interchanges, all lines ending at "Now" |
+| `src/_lib/signal.js` | route traces, elevation profiles and weekly-distance traces as SVG paths |
+| `src/pages/line.njk` | one page per line (`/code/`, `/circuits/`, `/sound/`, `/distance/`) |
+| `src/assets/js/site.js` | click-to-load players and the split-flap animation; everything works without it |
 | `public/admin/config.yml` | Sveltia CMS collections |
-| `public/_headers`, `public/_redirects` | CSP and caching; old blog URLs → new ones |
+| `public/_headers`, `public/_redirects` | CSP and caching; old URLs → new ones |
 | `wrangler.jsonc` | Worker name, asset handling, custom domain |
 
 Content written as `draft: true` is visible in `npm run serve` and hidden in production.

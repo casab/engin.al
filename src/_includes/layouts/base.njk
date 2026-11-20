@@ -8,13 +8,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ pageTitle }}</title>
   <meta name="description" content="{{ pageDesc }}">
-  <meta name="theme-color" content="#07090d">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#EDEDE8">
   <link rel="canonical" href="{{ page.url | absoluteUrl(site.url) }}">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate" type="application/atom+xml" href="/feed.xml" title="{{ site.title }}">
-  <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/assets/fonts/martian-mono-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/site.css">
   <meta property="og:type" content="{{ 'article' if date and page.url != '/' else 'website' }}">
   <meta property="og:site_name" content="{{ site.title }}">
@@ -25,18 +23,18 @@
   <meta name="twitter:card" content="summary_large_image">
   <script type="module" src="/assets/js/site.js"></script>
 </head>
-<body{% if channel %} data-ch="{{ channel }}"{% endif %}>
+<body{% if line %} class="c-{{ line }}"{% endif %}>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
       <a class="logo" href="/" aria-label="engin.al, home">
-        <svg viewBox="0 0 34 18" aria-hidden="true"><path d="M1 9 C4 1, 7 1, 9 9 S14 17, 17 9 S22 1, 25 9 S30 17, 33 9"/></svg>
-        <span>engin.al</span>
+        {% include "logo.svg.njk" %}
+        <span>ENGIN AL</span>
       </a>
       <nav class="nav" aria-label="Main">
         <ul>
           {%- for item in site.nav %}
-          <li><a href="{{ item.url }}"{% if page.url and page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
+          <li{% if item.line %} class="c-{{ item.line }}"{% endif %}><a href="{{ item.url }}"{% if page.url and page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{% if item.line %}<span class="bar" aria-hidden="true"></span>{% endif %}{{ item.label }}</a></li>
           {%- endfor %}
         </ul>
       </nav>
@@ -48,29 +46,9 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap">
-      <div>
-        <svg class="footer-trace trace" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true">
-          <path class="ch-code" d="M0 14 L40 14 L48 4 L56 24 L64 14 L400 14"/>
-        </svg>
-        <p class="sign">Built by hand with Eleventy. No trackers, no cookies. Written and maintained by Engin Al in Istanbul.</p>
-      </div>
-      <div>
-        <p class="label">elsewhere</p>
-        <ul>
-          {%- for s in site.socials %}
-          <li><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a></li>
-          {%- endfor %}
-        </ul>
-      </div>
-      <div>
-        <p class="label">index</p>
-        <ul>
-          <li><a href="/notes/">notes</a></li>
-          <li><a href="/feed.xml">feed</a></li>
-          <li><a href="https://github.com/casab/engin.al" rel="noopener noreferrer">source</a></li>
-        </ul>
-      </div>
+    <div class="wrap mono muted">
+      <span>Map drawn at build time from the content · Eleventy · No tracking · <a href="/feed.xml">feed</a> · <a href="https://github.com/casab/engin.al" rel="noopener noreferrer">source</a></span>
+      <span>{% for s in site.socials %}<a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</span>
     </div>
   </footer>
 </body>

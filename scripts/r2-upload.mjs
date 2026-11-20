@@ -22,7 +22,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const MANIFEST = "src/_data/media.json";
-const MEDIA_DIRS = ["projects", "sound", "distance", "notes"];
+const MEDIA_DIRS = ["projects", "sound", "distance", "notes", "stops"];
 const IMAGE_EXT = /\.(jpe?g|png|webp|avif|gif)$/i;
 const TYPES = {
   ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".avif": "image/avif",

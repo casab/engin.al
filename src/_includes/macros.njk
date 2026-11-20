@@ -1,64 +1,104 @@
 {#- Shared building blocks. Import with: {% import "macros.njk" as m %} -#}
 
-{%- macro chips(ids, channels) -%}
+{#- Line tags: a coloured bar + "L2 Circuits" for each line id -#}
+{%- macro tags(ids, lines, cls="") -%}
 {%- if ids and ids.length -%}
-<ul class="chips" aria-label="channels">
-  {%- for id in ids %}
-  {%- set c = id | channelInfo(channels) %}
-  <li class="chip ch-{{ c.id }}">CH{{ c.ch }} {{ c.label }}</li>
+<ul class="tags {{ cls }}" aria-label="Lines">
+  {%- for id in ids %}{% set l = id | lineInfo(lines) %}
+  <li class="tag c-{{ l.id }}"><span class="bar" aria-hidden="true"></span>{{ l.code }} {{ l.label }}</li>
   {%- endfor %}
 </ul>
 {%- endif -%}
 {%- endmacro -%}
 
-{%- macro sigilSvg(seed, extraClass="") -%}
-{%- set g = seed | sigil -%}
-<svg class="sigil {{ extraClass }}" viewBox="{{ g.viewBox }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-  <path class="grat" d="M0 100H320M160 0V200"/>
-  <path d="{{ g.d }}"/>
-</svg>
-{%- endmacro -%}
-
-{%- macro wave(kind, cls="") -%}
-{%- set g = kind | channelWave -%}
-<svg class="trace draw {{ cls }}" viewBox="{{ g.viewBox }}" preserveAspectRatio="none" aria-hidden="true">
-  <path class="glow" pathLength="1" d="{{ g.d }}"/>
-  <path pathLength="1" d="{{ g.d }}"/>
-</svg>
-{%- endmacro -%}
-
-{%- macro projectCard(p, channels) -%}
-{%- set main = (p.data.channels or ["code"])[0] -%}
-<li class="card ch-{{ main }}">
-  <div class="card__art">
-    {%- if p.data.cover %}
-    {% image p.data.cover | bundle(p.inputPath), p.data.cover_alt or "", "(min-width: 60rem) 33vw, 100vw" %}
-    {%- else %}
-    {{ sigilSvg(p.fileSlug) }}
-    {%- endif %}
-  </div>
-  <div class="card__body">
-    <p class="meta">{{ p.data.date | date("year") }} · {{ p.data.status or "shipped" }}{% if p.data.draft %} · <span class="chip draft-chip">draft</span>{% endif %}</p>
-    <h3><a href="{{ p.url }}">{{ p.data.title }}</a></h3>
-    {%- if p.data.summary %}<p>{{ p.data.summary }}</p>{% endif %}
-    {{ chips(p.data.channels, channels) }}
-  </div>
-</li>
-{%- endmacro -%}
-
 {#- Click-to-load player. Nothing loads from SoundCloud/Mixcloud/Bandcamp/YouTube until a click. -#}
 {%- macro player(p) -%}
 {%- if p and p.embed -%}
-<div class="player player--{{ p.type }}">
+<div class="player c-sound">
   <a class="player__facade" href="{{ p.url }}" data-embed="{{ p.embed }}" data-height="{{ p.height }}" data-video="{{ 'true' if p.video else '' }}" data-title="{{ p.label }}" rel="noopener noreferrer">
     <span class="player__play" aria-hidden="true">▶</span>
     <span>
       <span class="player__label">{{ p.label }}</span>
-      <span class="meta">{{ p.type }} · loads the player from {{ p.type }} when clicked</span>
+      <span class="mono muted">{{ p.type }} · the player loads from {{ p.type }} when clicked</span>
     </span>
   </a>
 </div>
 {%- elif p -%}
-<p><a class="btn" href="{{ p.url }}" rel="noopener noreferrer">listen on {{ p.label }} <span class="arrow">→</span></a></p>
+<p><a class="cta" href="{{ p.url }}" rel="noopener noreferrer">Listen on {{ p.label }} →</a></p>
 {%- endif -%}
+{%- endmacro -%}
+
+{#- The network map (desktop) and the same stations as a vertical diagram (phones), with a line filter -#}
+{%- macro network(stations, lines) -%}
+{%- set net = stations | network(lines) -%}
+<section class="network wrap" aria-labelledby="network-title">
+  <h2 class="sr-only" id="network-title">The network</h2>
+  <fieldset class="filter">
+    <legend class="sr-only">Show one line</legend>
+    <input type="radio" name="line" id="f-all" value="all" checked><label for="f-all"><span class="bar" aria-hidden="true"></span>All lines</label>
+    {%- for l in lines %}
+    <input type="radio" name="line" id="f-{{ l.id }}" value="{{ l.id }}"><label for="f-{{ l.id }}" class="c-{{ l.id }}"><span class="bar" aria-hidden="true"></span>{{ l.code }} {{ l.label }}</label>
+    {%- endfor %}
+    <span class="filter__hint mono muted">time runs left to right · {{ net.stations.length }} stations</span>
+  </fieldset>
+
+  <div class="map{% if net.width > 1400 %} is-wide{% endif %}">
+    <svg viewBox="0 0 {{ net.width }} {{ net.height }}" width="{{ net.width }}" height="{{ net.height }}" role="img" aria-labelledby="map-desc">
+      <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on four lines: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
+      <path class="axis" d="M0 {{ net.axisY }}H{{ net.width }}"/>
+      {%- for y in net.years %}<text class="year" x="{{ y.x }}" y="{{ net.axisY + 20 }}" text-anchor="middle">{{ y.label }}</text>{% endfor %}
+      {%- for p in net.paths %}
+      <g class="ln c-{{ p.id }}"><path pathLength="1" d="{{ p.d }}"/></g>
+      {%- endfor %}
+      {%- for s in net.stations %}
+      <g class="st{% if s.interchange %} st--x{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
+        {%- if s.url %}<a href="{{ s.url }}">{% endif %}
+        {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/>{% endif %}
+        <text x="{{ s.label.x }}" y="{{ s.label.y }}" text-anchor="middle">{{ s.text }}</text>
+        {%- if s.url %}</a>{% endif %}
+      </g>
+      {%- endfor %}
+      <g class="hub">
+        <rect x="{{ net.hub.x }}" y="{{ net.hub.y }}" width="{{ net.hub.w }}" height="{{ net.hub.h }}" rx="17"/>
+        <text x="{{ net.hub.labelX }}" y="{{ net.hub.labelY }}">NOW</text>
+      </g>
+    </svg>
+  </div>
+
+  <ol class="diagram" aria-label="Stations, newest first">
+    <li class="diagram__row diagram__row--now{% for l in lines %} on-{{ l.id }}{% endfor %}">
+      {%- for l in lines %}<span class="diagram__cell c-{{ l.id }}" aria-hidden="true"><span class="diagram__dot"></span></span>{% endfor %}
+      <span class="diagram__text"><a class="diagram__title" href="/now/">Now</a><span class="mono muted">all lines</span></span>
+    </li>
+    {%- for s in stations %}
+    <li class="diagram__row{% for l in s.lines %} on-{{ l }}{% endfor %}">
+      {%- for l in lines %}<span class="diagram__cell c-{{ l.id }}" aria-hidden="true">{% if l.id in s.lines %}<span class="diagram__dot"></span>{% endif %}</span>{% endfor %}
+      <span class="diagram__text">
+        {%- if s.url %}<a class="diagram__title" href="{{ s.url }}">{{ s.title }}</a>{% else %}<span class="diagram__title">{{ s.title }}</span>{% endif %}
+        <span class="mono muted">{% if s.lines.length > 1 %}interchange {% for l in s.lines %}{{ (l | lineInfo(lines)).code }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}{{ (s.lines[0] | lineInfo(lines)).code }} · {{ s.meta }}{% endif %}{% if s.draft %} · <span class="draft">draft</span>{% endif %}</span>
+      </span>
+    </li>
+    {%- endfor %}
+  </ol>
+</section>
+{%- endmacro -%}
+
+{#- The departures board. Rows come from the Now page (CMS); text is real HTML, the flip is decoration -#}
+{%- macro board(rows, lines) -%}
+<section class="board" aria-labelledby="board-title">
+  <div>
+    <h2 class="flaps" id="board-title" aria-label="Departures" data-flap>
+      {%- for ch in "DEPARTURES" %}<span class="flap" aria-hidden="true">{{ ch }}</span>{% endfor -%}
+    </h2>
+    <p class="board__note">Updated from the <a href="/now/">Now page</a></p>
+  </div>
+  <div class="board__rows">
+    {%- for b in rows %}{% set l = b.line | lineInfo(lines) %}
+    <span class="c-{{ l.id }}"><span class="bar" aria-hidden="true"></span><span class="sr-only">{{ l.code }} {{ l.label }}</span></span>
+    <span>{% if b.url %}<a href="{{ b.url }}">{{ b.destination }}</a>{% else %}{{ b.destination }}{% endif %}</span>
+    <span class="when">{{ b.when }}</span>
+    <span class="status">{{ b.status }}</span>
+    {%- endfor %}
+  </div>
+</section>
 {%- endmacro -%}

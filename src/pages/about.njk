@@ -1,30 +1,33 @@
 ---
 layout: layouts/base.njk
 permalink: /about/
-title: About
-description: Backend developer, electronics engineer by training, synth player and long-distance runner.
+title: Network information
+description: Backend developer, electronics engineer by training, synth player and long-distance runner, in Istanbul.
 ---
+{%- import "macros.njk" as m -%}
 <div class="wrap">
   <header class="page-head">
-    <span class="label">about</span>
-    <h1>about</h1>
+    <p class="label">About</p>
+    <h1 class="display">Network<br>information</h1>
   </header>
-  <div class="about-grid">
+  <div class="split split--7-5">
     <div class="prose">
       {{ about.body | md | safe }}
     </div>
-    <div>
+    <div class="aside">
       {%- if about.photo %}
-      <figure class="portrait">
-        {% image about.photo, about.photo_alt or "", "(min-width: 56rem) 30vw, 100vw" %}
-      </figure>
+      <figure class="plate portrait">{% image about.photo, about.photo_alt or "", "(min-width: 60rem) 35vw, 100vw" %}</figure>
       {%- endif %}
-      <ul class="facts">
-        {%- if about.based_in %}<li><span class="label">based in</span><span>{{ about.based_in }}</span></li>{% endif %}
+      <dl class="credits credits--ruled">
+        <dt>Operated by</dt><dd>{{ about.operated_by }}</dd>
+        <dt>Day job</dt><dd>{{ about.day_job }}</dd>
+        <dt>Trained as</dt><dd>{{ about.trained_as }}</dd>
+        <dt>Service</dt><dd>{{ about.service }}</dd>
+        <dt>Lines</dt><dd>{{ m.tags(["code", "circuits", "sound", "distance"], site.lines) }}</dd>
         {%- for s in site.socials %}
-        <li><span class="label">{{ s.label }}</span><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.url | replace("mailto:", "") | replace("https://", "") | replace("www.", "") }}</a></li>
+        <dt>{{ s.label }}</dt><dd><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.url | replace("mailto:", "") | replace("https://", "") | replace("www.", "") }}</a></dd>
         {%- endfor %}
-      </ul>
+      </dl>
     </div>
   </div>
 </div>

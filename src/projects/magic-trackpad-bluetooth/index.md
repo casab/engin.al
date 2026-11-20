@@ -1,7 +1,8 @@
 ---
 title: "Magic Trackpad 2 on Windows: Bluetooth fixes"
+short: "BT driver fixes"
 date: 2026-10-27
-channels: [circuits, code]
+lines: [circuits, code]
 status: shipped
 stack: ["KMDF", "C", "WPP"]
 summary: "Fixed a stall where a freshly paired Magic Trackpad never showed up as a touchpad until it was power-cycled."

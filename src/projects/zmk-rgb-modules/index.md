@@ -1,7 +1,8 @@
 ---
 title: "ZMK modules for a Reviung41"
+short: "ZMK modules"
 date: 2026-11-18
-channels: [circuits]
+lines: [circuits]
 status: ongoing
 stack: ["C", "Zephyr", "ZMK", "Devicetree"]
 summary: "One feature per repo: per-LED overlays, layer, battery, Bluetooth and media indicators, and a lazy layer-modifier key."
