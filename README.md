@@ -36,7 +36,8 @@ Node 22.9+.
 | `src/assets/js/site.js` | click-to-load players and the split-flap animation; everything works without it |
 | `public/admin/config.yml` | Sveltia CMS collections |
 | `public/_headers`, `public/_redirects` | CSP and caching; old URLs → new ones |
-| `wrangler.jsonc` | Worker name, asset handling, custom domain |
+| `wrangler.jsonc` | Worker name, asset handling, which paths run the Worker (`/api/*`) |
+| `worker/index.js` | the only server code: GitHub sign-in for the CMS at `/api/auth` |
 
 Content written as `draft: true` is visible in `npm run serve` and hidden in production.
 
@@ -59,7 +60,10 @@ See [docs/EDITING.md](docs/EDITING.md). Short version: open `/admin/`, sign in, 
    - `npm run strava:sync` once locally and look at the result on `/distance/` before committing `src/_data/strava/`.
    - Add repository secrets `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN`, and `GH_SECRETS_TOKEN` (fine-grained token for this repo only, *Secrets: read and write*, so the daily job can store a rotated refresh token). Optionally `STRAVA_PRIVACY_ZONES` (`lat,lng,radiusMetres;…`).
    - `.github/workflows/strava-sync.yml` then syncs daily and commits when something changed; that push makes Cloudflare rebuild the site.
-4. **CMS sign-in**: works right away with "Sign in with Token" (fine-grained GitHub token, *Contents: read and write* on this repo). For a one-click GitHub button, deploy [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) and set `base_url` in `public/admin/config.yml`.
+4. **CMS sign-in** (same setup as technoetkinlik): "Sign in with GitHub" goes through the site's own Worker (`worker/index.js`, `/api/auth`).
+   - Create a GitHub OAuth app at <https://github.com/settings/developers> → *OAuth Apps* → *New OAuth App*: homepage `https://engin.al`, callback URL `https://engin.al/api/auth/callback`.
+   - In Cloudflare: *Workers & Pages* → `engin-al` → *Settings* → *Variables and secrets*: add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, both as type **Secret** (deploys keep secrets; plain variables would be overwritten by `wrangler.jsonc`).
+   - Until then, "Sign in with Token" works with a fine-grained GitHub token (*Contents: read and write* on this repo).
 5. **Media on R2** (optional, keeps git small): create bucket `enginal-media` with public domain `media.engin.al`, put `R2_*` keys in `.env`, run `npm run r2:media -- --prune`. Pages then load those images from R2, resized by Cloudflare.
 
 ## Strava privacy
