@@ -1,0 +1,51 @@
+{
+  "title": "engin.al",
+  "tagline": "things that oscillate",
+  "url": "https://engin.al",
+  "author": "Engin Al",
+  "description": "Engin Al builds backends, takes devices apart, writes drivers, plays synths and runs long distances. This is the log.",
+  "og_image": "/engin-og.jpg",
+  "channels": [
+    {
+      "id": "code",
+      "ch": 1,
+      "label": "code",
+      "long": "backends, machine learning, games, tools",
+      "wave": "activation"
+    },
+    {
+      "id": "circuits",
+      "ch": 2,
+      "label": "circuits",
+      "long": "electronics, firmware, drivers, reverse engineering",
+      "wave": "square"
+    },
+    {
+      "id": "sound",
+      "ch": 3,
+      "label": "sound",
+      "long": "synths, DJ sets, guitar, drums, Ableton",
+      "wave": "audio"
+    },
+    {
+      "id": "distance",
+      "ch": 4,
+      "label": "distance",
+      "long": "half marathons, marathons, long rides",
+      "wave": "route"
+    }
+  ],
+  "nav": [
+    { "label": "projects", "url": "/projects/" },
+    { "label": "sound", "url": "/sound/" },
+    { "label": "distance", "url": "/distance/" },
+    { "label": "now", "url": "/now/" },
+    { "label": "about", "url": "/about/" }
+  ],
+  "socials": [
+    { "label": "GitHub", "url": "https://github.com/casab" },
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/enginal" },
+    { "label": "Instagram", "url": "https://instagram.com/etikmaske" },
+    { "label": "Email", "url": "mailto:enginal@gmail.com" }
+  ]
+}

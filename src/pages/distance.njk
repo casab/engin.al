@@ -1,0 +1,89 @@
+---
+layout: layouts/base.njk
+permalink: /distance/
+title: Distance
+channel: distance
+description: Half marathons, marathons and long rides, synced from Strava and drawn as signals.
+---
+{%- set log = strava | distanceLog(collections.distanceNotes) -%}
+{%- set weekly = strava.activities.weekly or {} -%}
+{%- set years = weekly | weeklyYears -%}
+{#- one vertical scale for every year, so years compare honestly -#}
+{%- set top = weekly | weeklyMax -%}
+
+<div class="wrap ch-distance">
+  <header class="page-head">
+    <span class="label">CH4 / distance</span>
+    <h1><span class="sig">distance</span></h1>
+    <p class="lede">Running is where I think. A long list of half marathons, two marathons, and some long days on the bike. Synced from Strava; routes are trimmed at both ends.</p>
+  </header>
+
+  {%- if years.length %}
+  <section class="section" aria-labelledby="weeks-title">
+    <div class="head">
+      <p class="label" id="weeks-title">weekly distance, one trace per year</p>
+      <p>Each line is a year, January on the left. Peaks are race builds, flat stretches are life.</p>
+    </div>
+    <div class="legend"><span class="chip run">run</span><span class="chip ride">ride</span></div>
+    <div class="years">
+      {%- for y in years %}
+      {%- set run = weekly[y].run | weeklyTrace({ max: top }) %}
+      {%- set ride = weekly[y].ride | weeklyTrace({ max: top }) %}
+      <div class="yr reveal">
+        <span class="meta">{{ y }}</span>
+        <svg class="trace draw" viewBox="0 0 1000 120" preserveAspectRatio="none" role="img" aria-label="Weekly distance in {{ y }}">
+          <path class="grid" d="M0 114H1000"/>
+          {%- if ride.d %}<g class="ride"><path class="glow" pathLength="1" d="{{ ride.d }}"/><path pathLength="1" d="{{ ride.d }}"/></g>{% endif %}
+          {%- if run.d %}<g class="run"><path class="glow" pathLength="1" d="{{ run.d }}"/><path pathLength="1" d="{{ run.d }}"/></g>{% endif %}
+        </svg>
+        <span class="meta yr__sum">{{ weekly[y].run_km or 0 }} km run · {{ weekly[y].ride_km or 0 }} km ride</span>
+      </div>
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endif %}
+
+  <section class="section" aria-labelledby="log-title">
+    <div class="head">
+      <p class="label" id="log-title">races &amp; long rides</p>
+    </div>
+    {%- if log.length %}
+    <ul class="routes" role="list">
+      {%- for a in log %}
+      {%- set g = a.id | route(strava) if a.has_route else null %}
+      <li class="route sport-{{ a.sport }} reveal" id="a{{ a.id }}">
+        <div class="route__map">
+          {%- if g %}
+          <svg class="trace draw" viewBox="{{ g.viewBox }}" role="img" aria-label="Route of {{ a.title }}">
+            <path class="glow" pathLength="1" d="{{ g.d }}"/>
+            <path pathLength="1" d="{{ g.d }}"/>
+            <circle class="dot" cx="{{ g.start[0] }}" cy="{{ g.start[1] }}" r="3"/>
+          </svg>
+          {%- elif a.photo %}
+          {% image a.photo | bundle(a.notePath), a.photoAlt or "", "20rem" %}
+          {%- endif %}
+        </div>
+        {%- if g and g.elev %}
+        <svg class="trace elev" viewBox="{{ g.elev.viewBox }}" preserveAspectRatio="none" aria-hidden="true">
+          <path class="area" d="{{ g.elev.area }}"/>
+          <path d="{{ g.elev.d }}"/>
+        </svg>
+        {%- endif %}
+        <p class="meta">{{ a.date | date("long") }} · {{ a.sport }}{% if a.race %} · race{% endif %}</p>
+        <h3>{{ a.title }}</h3>
+        <p class="route__stats">
+          <span><b>{{ a.distance_m | km }}</b> km</span>
+          {%- if a.moving_s %}<span><b>{{ a.moving_s | duration }}</b></span><span>{{ a | pace }}</span>{% endif %}
+          {%- if a.elev_m %}<span>↑ {{ a.elev_m | round }} m</span>{% endif %}
+        </p>
+        {%- if a.note %}<div class="route__note">{{ a.note | safe }}</div>{% endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- else %}
+    <p class="notice">Nothing synced yet. Races and long rides appear here after the first Strava sync (see the README).</p>
+    {%- endif %}
+  </section>
+
+  <p><a class="strava" href="https://www.strava.com" rel="noopener noreferrer">Data powered by <b>Strava</b></a>{% if strava.activities.synced_at %} <span class="meta">· synced {{ strava.activities.synced_at | date("long") }}</span>{% endif %}</p>
+</div>

@@ -1,0 +1,30 @@
+---
+layout: layouts/base.njk
+permalink: /about/
+title: About
+description: Backend developer, electronics engineer by training, synth player and long-distance runner.
+---
+<div class="wrap">
+  <header class="page-head">
+    <span class="label">about</span>
+    <h1>about</h1>
+  </header>
+  <div class="about-grid">
+    <div class="prose">
+      {{ about.body | md | safe }}
+    </div>
+    <div>
+      {%- if about.photo %}
+      <figure class="portrait">
+        {% image about.photo, about.photo_alt or "", "(min-width: 56rem) 30vw, 100vw" %}
+      </figure>
+      {%- endif %}
+      <ul class="facts">
+        {%- if about.based_in %}<li><span class="label">based in</span><span>{{ about.based_in }}</span></li>{% endif %}
+        {%- for s in site.socials %}
+        <li><span class="label">{{ s.label }}</span><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.url | replace("mailto:", "") | replace("https://", "") | replace("www.", "") }}</a></li>
+        {%- endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

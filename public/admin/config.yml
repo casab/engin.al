@@ -1,0 +1,224 @@
+# Sveltia CMS configuration: editing UI at https://engin.al/admin/
+# Docs: https://sveltiacms.app/en/docs
+#
+# Sign-in: until the OAuth helper exists, choose "Sign in with Token" and paste a GitHub
+# fine-grained personal access token with Contents: read & write on casab/engin.al.
+# For one-click "Sign in with GitHub", deploy the Sveltia CMS Authenticator Worker
+# (https://github.com/sveltia/sveltia-cms-auth) and set `base_url` below to its URL.
+# Locally (Chromium): open http://localhost:8080/admin/ and pick "Work with Local Repository".
+
+backend:
+  name: github
+  repo: casab/engin.al
+  branch: main
+  # base_url: https://sveltia-cms-auth.<your-subdomain>.workers.dev
+  commit_messages:
+    create: "content: add {{collection}} “{{slug}}”"
+    update: "content: update {{collection}} “{{slug}}”"
+    delete: "content: delete {{collection}} “{{slug}}”"
+    uploadMedia: "media: upload “{{path}}”"
+    deleteMedia: "media: delete “{{path}}”"
+
+site_url: https://engin.al
+display_url: https://engin.al
+logo_url: /favicon.svg
+
+# Site-wide images (e.g. the about photo). Collections below keep images next to their entry instead.
+media_folder: src/assets/img
+public_folder: /assets/img
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  # ------------------------------------------------------------------ projects
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: One folder per project. Images go next to the text. Entries marked Draft are hidden on the live site.
+    folder: src/projects
+    path: "{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    create: true
+    extension: md
+    format: frontmatter
+    sortable_fields: [date, title]
+    summary: "{{date | date('YYYY-MM-DD')}} · {{title}}{{draft | ternary(' · draft', '')}}"
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", hint: "When it shipped, or when the work happened" }
+      - name: channels
+        label: Channels
+        widget: select
+        multiple: true
+        min: 1
+        hint: The first one sets the page colour.
+        options:
+          - { label: "CH1 code", value: code }
+          - { label: "CH2 circuits", value: circuits }
+          - { label: "CH3 sound", value: sound }
+      - { name: status, label: Status, widget: select, options: [shipped, ongoing, shelved], default: shipped }
+      - { name: summary, label: Summary, widget: text, hint: "One or two sentences. Shown on cards and in the log." }
+      - { name: stack, label: Stack, widget: list, required: false, hint: "Comma-separated, e.g. Rust, Win32" }
+      - name: links
+        label: Links
+        widget: list
+        required: false
+        fields:
+          - { name: label, label: Label, widget: string, hint: "repo, site, demo…" }
+          - { name: url, label: URL, widget: string }
+      - { name: cover, label: Cover image, widget: image, required: false }
+      - { name: cover_alt, label: Cover description (alt text), widget: string, required: false }
+      - { name: featured, label: Show on the home page, widget: boolean, default: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Text, widget: markdown }
+
+  # ------------------------------------------------------------------ sound
+  - name: sound
+    label: Sound
+    label_singular: Recording or set
+    folder: src/sound
+    path: "{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    create: true
+    extension: md
+    format: frontmatter
+    sortable_fields: [date, title]
+    summary: "{{date | date('YYYY-MM-DD')}} · {{kind}} · {{title}}"
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
+      - { name: kind, label: Kind, widget: select, options: [live set, dj mix, track, release, session], default: live set }
+      - { name: venue, label: Where, widget: string, required: false }
+      - { name: summary, label: Summary, widget: text, required: false }
+      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "SoundCloud, Mixcloud, YouTube or Bandcamp URL. Shown as a click-to-load player." }
+      - { name: bandcamp_id, label: Bandcamp album/track id, widget: string, required: false, hint: "Bandcamp players need the numeric id (Share → Embed)." }
+      - { name: gear, label: Gear used, widget: list, required: false }
+      - { name: cover, label: Cover image, widget: image, required: false }
+      - { name: cover_alt, label: Cover description (alt text), widget: string, required: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Notes, widget: markdown, required: false }
+
+  # ------------------------------------------------------------------ distance notes
+  - name: distance
+    label: Distance notes
+    label_singular: Activity note
+    description: >-
+      Races and long rides come from Strava automatically. Add a note here to give one a title,
+      a few words or a photo, to show an activity that wasn't picked up, or to hide one.
+      The Strava id is the number at the end of the activity's URL.
+    folder: src/distance
+    path: "{{strava_id}}"
+    media_folder: ""
+    public_folder: ""
+    create: true
+    extension: md
+    format: frontmatter
+    identifier_field: strava_id
+    summary: "{{strava_id}} · {{title}}"
+    fields:
+      - { name: strava_id, label: Strava activity id, widget: string, pattern: ['^\d+$', "Digits only"] }
+      - { name: title, label: Title, widget: string, required: false, hint: "Leave empty to keep the Strava name" }
+      - { name: show, label: Always show, widget: boolean, default: false, hint: "Show it even if it isn't marked as a race on Strava" }
+      - { name: hidden, label: Hide, widget: boolean, default: false }
+      - { name: photo, label: Photo, widget: image, required: false, hint: "Used when there is no route to draw" }
+      - { name: photo_alt, label: Photo description (alt text), widget: string, required: false }
+      - { name: body, label: Note, widget: markdown, required: false }
+
+  # ------------------------------------------------------------------ notes
+  - name: notes
+    label: Notes
+    label_singular: Note
+    folder: src/notes
+    media_folder: ""
+    public_folder: ""
+    create: true
+    extension: md
+    format: frontmatter
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
+      - { name: description, label: Description, widget: text, required: false }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Text, widget: markdown }
+
+  # ------------------------------------------------------------------ single pages and settings
+  - name: pages
+    label: Pages
+    files:
+      - name: now
+        label: Now
+        file: src/_data/now.json
+        format: json
+        fields:
+          - { name: updated, label: Updated, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
+          - { name: building, label: Building, widget: string, required: false }
+          - { name: training, label: Training for, widget: string, required: false }
+          - { name: playing, label: Practising, widget: string, required: false }
+          - { name: listening, label: On repeat, widget: string, required: false }
+          - { name: body, label: Text, widget: markdown, required: false }
+      - name: about
+        label: About
+        file: src/_data/about.json
+        format: json
+        fields:
+          - { name: photo, label: Photo, widget: image, required: false }
+          - { name: photo_alt, label: Photo description (alt text), widget: string, required: false }
+          - { name: based_in, label: Based in, widget: string, required: false }
+          - { name: body, label: Text, widget: markdown }
+      - name: rig
+        label: Sound → Rig
+        file: src/_data/rig.json
+        format: json
+        fields:
+          - { name: intro, label: Intro, widget: text, required: false }
+          - name: items
+            label: Instruments and gear
+            widget: list
+            summary: "{{kind}} · {{name}}"
+            fields:
+              - { name: kind, label: Kind, widget: string, hint: "guitar, synths, drums…" }
+              - { name: name, label: Name, widget: string }
+              - { name: note, label: Note, widget: string, required: false }
+      - name: site
+        label: Site settings
+        file: src/_data/site.json
+        format: json
+        fields:
+          - { name: title, label: Site title, widget: string }
+          - { name: tagline, label: Tagline, widget: string }
+          - { name: url, label: URL, widget: string }
+          - { name: author, label: Author, widget: string }
+          - { name: description, label: Description (search engines and link previews), widget: text }
+          - { name: og_image, label: Link preview image, widget: string }
+          - name: channels
+            label: Channels
+            widget: list
+            allow_add: false
+            allow_remove: false
+            allow_reorder: false
+            summary: "CH{{ch}} {{label}}"
+            fields:
+              - { name: id, label: Id, widget: hidden }
+              - { name: ch, label: Number, widget: hidden }
+              - { name: label, label: Label, widget: string }
+              - { name: long, label: Description, widget: string }
+              - { name: wave, label: Wave, widget: hidden }
+          - name: nav
+            label: Menu
+            widget: list
+            fields:
+              - { name: label, label: Label, widget: string }
+              - { name: url, label: URL, widget: string }
+          - name: socials
+            label: Elsewhere
+            widget: list
+            fields:
+              - { name: label, label: Label, widget: string }
+              - { name: url, label: URL, widget: string }

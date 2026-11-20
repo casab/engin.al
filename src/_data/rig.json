@@ -1,0 +1,35 @@
+{
+  "intro": "What the sounds come from. Edit this list in the CMS under Sound → Rig.",
+  "items": [
+    {
+      "kind": "guitar",
+      "name": "Electric guitar",
+      "note": "The first instrument, and still the one I reach for."
+    },
+    {
+      "kind": "drums",
+      "name": "Yamaha DTX PRO kit",
+      "note": "Electronic kit into Addictive Drums 2. Learning, slowly."
+    },
+    {
+      "kind": "keys",
+      "name": "Keyboard / MIDI controller",
+      "note": ""
+    },
+    {
+      "kind": "synths",
+      "name": "Hardware synthesizers",
+      "note": "For live sets: patched, sequenced and played in real time."
+    },
+    {
+      "kind": "daw",
+      "name": "Ableton Live 12",
+      "note": "Production, live performance and plenty of MIDI scripting."
+    },
+    {
+      "kind": "dj",
+      "name": "DJ setup",
+      "note": ""
+    }
+  ]
+}

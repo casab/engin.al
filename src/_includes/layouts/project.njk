@@ -1,0 +1,35 @@
+---
+layout: layouts/base.njk
+---
+{%- import "macros.njk" as m -%}
+{%- set main = (channels or ["code"])[0] -%}
+{%- set nb = collections.projects | getPreviousCollectionItem(page) -%}
+{%- set na = collections.projects | getNextCollectionItem(page) -%}
+<article class="wrap ch-{{ main }}">
+  <header class="page-head detail-head">
+    <a class="label" href="/projects/">← projects</a>
+    <h1>{{ title }}</h1>
+    {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
+    {{ m.chips(channels, site.channels) }}
+    <ul class="facts">
+      <li><span class="label">year</span><span>{{ date | date("year") }}</span></li>
+      <li><span class="label">status</span><span>{{ status or "shipped" }}</span></li>
+      {%- if stack and stack.length %}<li><span class="label">stack</span><span>{{ stack | join(", ") }}</span></li>{% endif %}
+      {%- for l in links %}
+      <li><span class="label">{{ l.label or "link" }}</span><a href="{{ l.url }}" rel="noopener noreferrer">{{ l.url | replace("https://", "") | replace("www.", "") }}</a></li>
+      {%- endfor %}
+    </ul>
+  </header>
+  {%- if cover %}
+  <figure class="cover">
+    {% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 76rem) 76rem, 100vw", true %}
+  </figure>
+  {%- endif %}
+  <div class="prose">
+    {{ content | safe }}
+  </div>
+  <nav class="pager" aria-label="More projects">
+    {%- if na %}<a href="{{ na.url }}"><span class="label">← newer</span>{{ na.data.title }}</a>{% else %}<span></span>{% endif %}
+    {%- if nb %}<a class="next" href="{{ nb.url }}"><span class="label">older →</span>{{ nb.data.title }}</a>{% endif %}
+  </nav>
+</article>

@@ -1,0 +1,22 @@
+---
+layout: layouts/base.njk
+permalink: /now/
+title: Now
+description: What I'm building, training for and listening to at the moment.
+---
+<div class="narrow">
+  <header class="page-head">
+    <span class="label">now · updated {{ now.updated | date("long") }}</span>
+    <h1>now</h1>
+    <p class="lede">What I'm doing at the moment. This page replaces the blog I never wrote.</p>
+  </header>
+  <ul class="facts">
+    {%- if now.building %}<li class="ch-code"><span class="chip">building</span><span>{{ now.building }}</span></li>{% endif %}
+    {%- if now.training %}<li class="ch-distance"><span class="chip">training for</span><span>{{ now.training }}</span></li>{% endif %}
+    {%- if now.playing %}<li class="ch-sound"><span class="chip">practising</span><span>{{ now.playing }}</span></li>{% endif %}
+    {%- if now.listening %}<li class="ch-sound"><span class="chip">on repeat</span><span>{{ now.listening }}</span></li>{% endif %}
+  </ul>
+  <div class="prose section">
+    {{ now.body | md | safe }}
+  </div>
+</div>

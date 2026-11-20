@@ -1,0 +1,9 @@
+# Old AstroPaper blog URLs → new site. 301 = permanent.
+/posts/enhancing-resume-with-llms/   /notes/enhancing-resume-with-llms/   301
+/posts/enhancing-resume-with-llms    /notes/enhancing-resume-with-llms/   301
+/posts/*                             /notes/                              301
+/posts                               /notes/                              301
+/tags/*                              /notes/                              301
+/archives/*                          /notes/                              301
+/search/                             /                                    301
+/rss.xml                             /feed.xml                            301
