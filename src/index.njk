@@ -3,151 +3,93 @@ layout: layouts/base.njk
 permalink: /
 ---
 {%- import "macros.njk" as m -%}
-{%- set log = strava | distanceLog(collections.distanceNotes) -%}
-{%- set routed = [] -%}
-{%- for a in log %}{% if a.has_route and routed.length == 0 %}{% set routed = (routed.push(a), routed) %}{% endif %}{% endfor -%}
-{%- set lastRace = routed[0] -%}
-{%- set lastRoute = (lastRace.id | route(strava)) if lastRace else null -%}
-{%- set latestProject = collections.projects[0] -%}
+{%- set stations = collections.stations -%}
+{%- set xs = stations | interchanges -%}
+{%- set featured = null -%}
+{%- for s in xs %}{% if not featured and s.featured %}{% set featured = s %}{% endif %}{% endfor -%}
+{%- if not featured %}{% set featured = xs | first %}{% endif -%}
 
-<section class="hero wrap" aria-labelledby="hero-title">
-  <div class="hero__grid">
-    <div>
-      <p class="label">CH1–4 · engin al · istanbul</p>
-      <h1 id="hero-title">things that <span class="osc">oscillate</span></h1>
-      <p class="hero__intro">
-        I write <strong>backends</strong> for a living at Digital Loop. The rest of the time goes to
-        <strong>circuits</strong> and firmware, taking devices apart, <strong>synths</strong> and guitars,
-        and running or riding <strong>long distances</strong>. This page is the log.
-      </p>
-      <div class="hero__controls">
-        <button class="btn synth-toggle ch-sound" type="button" aria-pressed="false" hidden data-synth-toggle>
-          <span aria-hidden="true">♪</span> <span data-synth-label>sound off</span>
-        </button>
-        <a class="btn" href="/projects/">all projects <span class="arrow">→</span></a>
-      </div>
-    </div>
+<section class="hero wrap split split--7-5" aria-labelledby="hero-title">
+  <h1 class="display" id="hero-title">Four lines,<br>one network.</h1>
+  <div class="intro">
+    {%- for p in site.intro %}<p>{{ p }}</p>{% endfor %}
+  </div>
+</section>
 
-    <div>
-      <div class="scope ch-code" data-scope data-ch="code">
-        {%- set g = "activation" | channelWave %}
-        <svg class="scope__static" viewBox="{{ g.viewBox }}" preserveAspectRatio="none" aria-hidden="true"><path d="{{ g.d }}"/></svg>
-        <div class="scope__grat" aria-hidden="true"></div>
-        <canvas aria-label="Oscilloscope animation cycling through the four channels" role="img"></canvas>
-        <div class="scope__hud scope__hud--top" aria-hidden="true">
-          <span class="label" data-scope-ch>CH1 code</span>
-          <span class="label" data-scope-mode>2 ms/div</span>
-        </div>
-        <div class="scope__hud" aria-hidden="true">
-          <span class="label scope__hint">keys A–K play notes · tap the screen</span>
-          <span class="label" data-scope-trig>trig ▲ auto</span>
-        </div>
+{{ m.network(stations, site.lines) }}
+
+<div class="wrap section">
+  {%- set rows = now.board if now.board and now.board.length else [] -%}
+  {%- if rows.length %}{{ m.board(rows, site.lines) }}{% endif %}
+</div>
+
+<section class="wrap" aria-label="Lines">
+  <div class="lines-index">
+    {%- for l in site.lines %}
+    {%- set list = stations | lineStations(l.id, site.lines) %}
+    <div class="c-{{ l.id }}">
+      <div class="lines-index__head">
+        <h2 class="display"><a href="{{ l.url }}">{{ l.label }}</a></h2>
+        <span class="mono">{{ l.code }}</span>
       </div>
-      <ul class="channels" role="list">
-        {%- for c in site.channels %}
-        <li>
-          <a class="channel ch-{{ c.id }}" href="{{ '/distance/' if c.id == 'distance' else ('/sound/' if c.id == 'sound' else '/projects/#f-' + c.id) }}" data-channel="{{ c.id }}">
-            <span class="label">CH{{ c.ch }}</span>
-            <b>{{ c.label }}</b>
-          </a>
+      {%- if list.length %}
+      <ol class="tracks">
+        {%- for s in list | limit(5) %}
+        <li class="track">
+          <span class="track__n">{{ s.code }}</span>
+          <span class="track__t">{% if s.url %}<a href="{{ s.url }}">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</span>
+          <span class="track__m">{% if s.lines.length > 1 %}× {% for o in s.lines %}{% if o != l.id %}{{ (o | lineInfo(site.lines)).code }} {% endif %}{% endfor %}· {% endif %}{{ s.meta }}{% if s.draft %} · <span class="draft">draft</span>{% endif %}</span>
         </li>
         {%- endfor %}
-      </ul>
+      </ol>
+      {%- else %}
+      <p class="muted">No stations open yet.</p>
+      {%- endif %}
+      <a class="lines-index__more cta" href="{{ l.url }}">The {{ l.label }} line →</a>
+    </div>
+    {%- endfor %}
+  </div>
+</section>
+
+{%- if featured %}
+<section class="wrap section">
+  <div class="split split--6-5 feature ruled">
+    <div class="section">
+      {%- if featured.cover %}
+      <figure class="plate">{% image featured.cover, featured.coverAlt, "(min-width: 60rem) 50vw, 100vw" %}</figure>
+      {%- else %}
+      <div class="plate plate--empty c-{{ featured.lines[0] }}" aria-hidden="true"></div>
+      {%- endif %}
+    </div>
+    <div class="feature__text">
+      <p class="label">Interchange · {% for l in featured.lines %}{{ (l | lineInfo(site.lines)).code }}{% if not loop.last %} × {% endif %}{% endfor %}</p>
+      <h2 class="display">{{ featured.title }}</h2>
+      {{ m.tags(featured.lines, site.lines) }}
+      {%- if featured.summary %}<p>{{ featured.summary }}</p>{% endif %}
+      {%- if featured.data and featured.data.stack and featured.data.stack.length %}
+      <dl class="credits credits--ruled">
+        <dt>Built with</dt><dd>{{ featured.data.stack | join(", ") }}</dd>
+        {%- if featured.data.status %}<dt>Status</dt><dd>{{ featured.data.status }}</dd>{% endif %}
+      </dl>
+      {%- endif %}
+      {%- if featured.url %}<a class="cta" href="{{ featured.url }}">Alight here →</a>{% endif %}
     </div>
   </div>
-  {%- if lastRoute %}
-  <script type="application/json" id="scope-route">{{ lastRoute.scope | json | safe }}</script>
-  {%- endif %}
-</section>
-
-{%- set nowItems = [] -%}
-{%- if now.building %}{% set nowItems = (nowItems.push({ k: "building", v: now.building, ch: "code", url: "/now/" }), nowItems) %}{% endif -%}
-{%- if latestProject %}{% set nowItems = (nowItems.push({ k: "latest project", v: latestProject.data.title, ch: (latestProject.data.channels or ["code"])[0], url: latestProject.url }), nowItems) %}{% endif -%}
-{%- if log.length %}{% set nowItems = (nowItems.push({ k: "last " + log[0].sport, v: (log[0].distance_m | km) + " km · " + log[0].title, ch: "distance", url: "/distance/" }), nowItems) %}{% endif -%}
-{%- if now.training %}{% set nowItems = (nowItems.push({ k: "training for", v: now.training, ch: "distance", url: "/now/" }), nowItems) %}{% endif -%}
-{%- if now.listening %}{% set nowItems = (nowItems.push({ k: "on repeat", v: now.listening, ch: "sound", url: "/now/" }), nowItems) %}{% endif -%}
-{%- if now.playing %}{% set nowItems = (nowItems.push({ k: "practising", v: now.playing, ch: "sound", url: "/now/" }), nowItems) %}{% endif -%}
-{%- if nowItems.length %}
-<aside class="now-strip" aria-label="Currently">
-  <ul>
-    {%- for pass in [1, 2] %}
-    {%- for it in nowItems %}
-    <li class="ch-{{ it.ch }}"{% if pass == 2 %} aria-hidden="true"{% endif %}><span class="label">{{ it.k }}</span><a href="{{ it.url }}"{% if pass == 2 %} tabindex="-1"{% endif %}>{{ it.v }}</a></li>
-    {%- endfor %}
-    {%- endfor %}
-  </ul>
-</aside>
-{%- endif %}
-
-<section class="section wrap" aria-labelledby="channels-title">
-  <div class="head">
-    <p class="label" id="channels-title">four channels, one signal</p>
-  </div>
-  <ol class="chan-list" role="list">
-    {%- for c in site.channels %}
-    <li class="chan ch-{{ c.id }} reveal">
-      <div class="chan__n" aria-hidden="true">{{ c.ch | pad }}</div>
-      <div>
-        <h2><a href="{{ '/distance/' if c.id == 'distance' else ('/sound/' if c.id == 'sound' else '/projects/#f-' + c.id) }}">{{ c.label }}</a></h2>
-        <p class="chan__desc">{{ c.long }}</p>
-        {{ m.wave(c.wave) }}
-      </div>
-      <div>
-        {%- if c.id == "sound" %}
-          {%- if collections.sound.length %}
-          <ul class="chan__items" role="list">
-            {%- for s in collections.sound | limit(3) %}
-            <li><a href="{{ s.url }}">{{ s.data.title }}</a><span class="meta">{{ s.data.kind }} · {{ s.data.date | date("year") }}</span></li>
-            {%- endfor %}
-          </ul>
-          {%- else %}
-          <ul class="chan__items" role="list">
-            {%- for r in rig.items | limit(4) %}
-            <li><span>{{ r.name }}</span><span class="meta">{{ r.kind }}</span></li>
-            {%- endfor %}
-          </ul>
-          {%- endif %}
-          <a class="btn chan__more" href="/sound/">sound <span class="arrow">→</span></a>
-        {%- elif c.id == "distance" %}
-          {%- if log.length %}
-          <ul class="chan__items" role="list">
-            {%- for a in log | limit(3) %}
-            <li><a href="/distance/#a{{ a.id }}">{{ a.title }}</a><span class="meta">{{ a.distance_m | km }} km · {{ a.date | date("month") }}</span></li>
-            {%- endfor %}
-          </ul>
-          {%- else %}
-          <p class="empty">race log syncs from Strava. nothing here yet.</p>
-          {%- endif %}
-          <a class="btn chan__more" href="/distance/">distance <span class="arrow">→</span></a>
-        {%- else %}
-          {%- set items = collections.projects | withChannel(c.id) | limit(3) %}
-          {%- if items.length %}
-          <ul class="chan__items" role="list">
-            {%- for p in items %}
-            <li><a href="{{ p.url }}">{{ p.data.title }}</a><span class="meta">{{ p.data.date | date("year") }}</span></li>
-            {%- endfor %}
-          </ul>
-          {%- else %}
-          <p class="empty">nothing published on this channel yet.</p>
-          {%- endif %}
-          <a class="btn chan__more" href="/projects/#f-{{ c.id }}">{{ c.label }} projects <span class="arrow">→</span></a>
-        {%- endif %}
-      </div>
-    </li>
-    {%- endfor %}
-  </ol>
-</section>
-
-{%- set featured = collections.featuredProjects if collections.featuredProjects.length else collections.projects -%}
-{%- if featured.length %}
-<section class="section wrap" aria-labelledby="selected-title">
-  <div class="head">
-    <p class="label" id="selected-title">selected projects</p>
-  </div>
-  <ul class="cards" role="list">
-    {%- for p in featured | limit(6) %}
-    {{ m.projectCard(p, site.channels) }}
-    {%- endfor %}
-  </ul>
 </section>
 {%- endif %}
+
+<section class="wrap section ruled info" aria-labelledby="info-title">
+  <h2 class="display" id="info-title">Network<br>information</h2>
+  <dl class="credits">
+    <dt>Operated by</dt><dd>{{ about.operated_by }}</dd>
+    <dt>Day job</dt><dd>{{ about.day_job }}</dd>
+    <dt>Trained as</dt><dd>{{ about.trained_as }}</dd>
+    <dt>Service</dt><dd>{{ about.service }}</dd>
+  </dl>
+  <dl class="credits">
+    {%- for s in site.socials %}
+    <dt>{{ s.label }}</dt><dd><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.url | replace("mailto:", "") | replace("https://", "") | replace("www.", "") }}</a></dd>
+    {%- endfor %}
+    <dt>More</dt><dd><a href="/about/">About</a> · <a href="/now/">Now</a></dd>
+  </dl>
+</section>

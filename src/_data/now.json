@@ -4,5 +4,25 @@
   "training": "the next half marathon",
   "playing": "drum grooves on the DTX kit",
   "listening": "",
-  "body": "Most evenings go to small hardware projects: keyboard firmware modules for ZMK, trackpad drivers on Windows, a MIDI fix so my electronic drum kit chokes cymbals properly in Ableton.\n\nOn weekends: long runs, and the occasional long ride when the weather allows.\n\n*Edit this page in the CMS under **Pages → Now**.*"
+  "body": "Most evenings go to small hardware projects: keyboard firmware modules for ZMK, trackpad drivers on Windows, a MIDI fix so my electronic drum kit chokes cymbals properly in Ableton.\n\nOn weekends: long runs, and the occasional long ride when the weather allows.\n\n*Edit this page in the CMS under **Pages → Now**.*",
+  "board": [
+    {
+      "line": "circuits",
+      "destination": "ZMK modules v2",
+      "when": "This week",
+      "status": "On time"
+    },
+    {
+      "line": "code",
+      "destination": "This site",
+      "when": "Now",
+      "status": "Boarding"
+    },
+    {
+      "line": "distance",
+      "destination": "[Next race]",
+      "when": "[Month]",
+      "status": "Training"
+    }
+  ]
 }

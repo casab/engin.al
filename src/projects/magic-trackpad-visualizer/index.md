@@ -1,7 +1,8 @@
 ---
 title: "Magic Trackpad Visualizer"
+short: "Trackpad Visualizer"
 date: 2026-11-16
-channels: [circuits, code]
+lines: [circuits, code]
 status: shipped
 stack: ["C#", "HLSL", "Direct3D"]
 summary: "Shows what an Apple Magic Trackpad feels on Windows: every finger, its pressure and contact shape, drawn live on the GPU."

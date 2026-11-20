@@ -1,7 +1,7 @@
 ---
 title: "uncvl.xyz"
 date: 2026-11-09
-channels: [code, sound]
+lines: [code, sound]
 status: shipped
 stack: ["Eleventy", "Sveltia CMS", "Cloudflare"]
 summary: "Website for the Uncivilization collective: events, releases and artists, edited by the crew in a git-based CMS."

@@ -1,6 +1,6 @@
 export default {
   layout: "layouts/project.njk",
   eleventyComputed: {
-    channel: (data) => (data.channels && data.channels[0]) || "code",
+    line: (data) => (data.lines && data.lines[0]) || "code",
   },
 };

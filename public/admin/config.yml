@@ -37,7 +37,7 @@ collections:
   - name: projects
     label: Projects
     label_singular: Project
-    description: One folder per project. Images go next to the text. Entries marked Draft are hidden on the live site.
+    description: One folder per project, each a station on the map. Two or more lines make it an interchange. Images go next to the text. Entries marked Draft are hidden on the live site.
     folder: src/projects
     path: "{{slug}}/index"
     media_folder: ""
@@ -50,16 +50,18 @@ collections:
     fields:
       - { name: title, label: Title, widget: string }
       - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", hint: "When it shipped, or when the work happened" }
-      - name: channels
-        label: Channels
+      - { name: short, label: Map label, widget: string, required: false, hint: "Short name for the map, when the title is long (e.g. BT driver fixes)" }
+      - name: lines
+        label: Lines
         widget: select
         multiple: true
         min: 1
-        hint: The first one sets the page colour.
+        hint: The first one sets the page colour. Two or more make this an interchange.
         options:
-          - { label: "CH1 code", value: code }
-          - { label: "CH2 circuits", value: circuits }
-          - { label: "CH3 sound", value: sound }
+          - { label: "L1 Code", value: code }
+          - { label: "L2 Circuits", value: circuits }
+          - { label: "L3 Sound", value: sound }
+          - { label: "L4 Distance", value: distance }
       - { name: status, label: Status, widget: select, options: [shipped, ongoing, shelved], default: shipped }
       - { name: summary, label: Summary, widget: text, hint: "One or two sentences. Shown on cards and in the log." }
       - { name: stack, label: Stack, widget: list, required: false, hint: "Comma-separated, e.g. Rust, Win32" }
@@ -72,7 +74,7 @@ collections:
           - { name: url, label: URL, widget: string }
       - { name: cover, label: Cover image, widget: image, required: false }
       - { name: cover_alt, label: Cover description (alt text), widget: string, required: false }
-      - { name: featured, label: Show on the home page, widget: boolean, default: false }
+      - { name: featured, label: Feature as the interchange on the home page, widget: boolean, default: false }
       - { name: draft, label: Draft, widget: boolean, default: false }
       - { name: body, label: Text, widget: markdown }
 
@@ -93,6 +95,17 @@ collections:
       - { name: title, label: Title, widget: string }
       - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
       - { name: kind, label: Kind, widget: select, options: [live set, dj mix, track, release, session], default: live set }
+      - name: lines
+        label: Lines
+        widget: select
+        multiple: true
+        required: false
+        hint: Leave empty for the Sound line only. Add another line to make it an interchange.
+        options:
+          - { label: "L1 Code", value: code }
+          - { label: "L2 Circuits", value: circuits }
+          - { label: "L3 Sound", value: sound }
+          - { label: "L4 Distance", value: distance }
       - { name: venue, label: Where, widget: string, required: false }
       - { name: summary, label: Summary, widget: text, required: false }
       - { name: embed_url, label: Listen link, widget: string, required: false, hint: "SoundCloud, Mixcloud, YouTube or Bandcamp URL. Shown as a click-to-load player." }
@@ -102,6 +115,39 @@ collections:
       - { name: cover_alt, label: Cover description (alt text), widget: string, required: false }
       - { name: draft, label: Draft, widget: boolean, default: false }
       - { name: body, label: Notes, widget: markdown, required: false }
+
+  # ------------------------------------------------------------------ milestones
+  - name: stops
+    label: Milestones
+    label_singular: Milestone
+    description: >-
+      Stations that need no page of their own: a degree, a first gig, a first race, a new job.
+      They appear on the map and on their line's page.
+    folder: src/stops
+    media_folder: ""
+    public_folder: ""
+    create: true
+    extension: md
+    format: frontmatter
+    sortable_fields: [date, title]
+    summary: "{{date | date('YYYY')}} · {{title}}"
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: short, label: Map label, widget: string, required: false }
+      - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
+      - name: lines
+        label: Lines
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: "L1 Code", value: code }
+          - { label: "L2 Circuits", value: circuits }
+          - { label: "L3 Sound", value: sound }
+          - { label: "L4 Distance", value: distance }
+      - { name: url, label: Link, widget: string, required: false, hint: "Optional: where the station links to" }
+      - { name: note, label: Note, widget: text, required: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
 
   # ------------------------------------------------------------------ distance notes
   - name: distance
@@ -162,6 +208,25 @@ collections:
           - { name: training, label: Training for, widget: string, required: false }
           - { name: playing, label: Practising, widget: string, required: false }
           - { name: listening, label: On repeat, widget: string, required: false }
+          - name: board
+            label: Departures board
+            widget: list
+            required: false
+            hint: Shown on the home page and the Now page, in this order.
+            summary: "{{line}} · {{destination}} · {{status}}"
+            fields:
+              - name: line
+                label: Line
+                widget: select
+                options:
+                  - { label: "L1 Code", value: code }
+                  - { label: "L2 Circuits", value: circuits }
+                  - { label: "L3 Sound", value: sound }
+                  - { label: "L4 Distance", value: distance }
+              - { name: destination, label: Destination, widget: string, hint: "What it is, e.g. ZMK modules v2" }
+              - { name: when, label: When, widget: string, hint: "This week, March, Now…" }
+              - { name: status, label: Status, widget: string, hint: "On time, Boarding, Delayed, Training…" }
+              - { name: url, label: Link, widget: string, required: false }
           - { name: body, label: Text, widget: markdown, required: false }
       - name: about
         label: About
@@ -171,6 +236,10 @@ collections:
           - { name: photo, label: Photo, widget: image, required: false }
           - { name: photo_alt, label: Photo description (alt text), widget: string, required: false }
           - { name: based_in, label: Based in, widget: string, required: false }
+          - { name: operated_by, label: Operated by, widget: string }
+          - { name: day_job, label: Day job, widget: string }
+          - { name: trained_as, label: Trained as, widget: string }
+          - { name: service, label: Service, widget: string }
           - { name: body, label: Text, widget: markdown }
       - name: rig
         label: Sound → Rig
@@ -197,25 +266,29 @@ collections:
           - { name: author, label: Author, widget: string }
           - { name: description, label: Description (search engines and link previews), widget: text }
           - { name: og_image, label: Link preview image, widget: string }
-          - name: channels
-            label: Channels
+          - { name: intro, label: Home page intro (two short paragraphs), widget: list, field: { name: p, label: Paragraph, widget: text } }
+          - name: lines
+            label: Lines
             widget: list
             allow_add: false
             allow_remove: false
             allow_reorder: false
-            summary: "CH{{ch}} {{label}}"
+            summary: "{{code}} {{label}}"
             fields:
               - { name: id, label: Id, widget: hidden }
-              - { name: ch, label: Number, widget: hidden }
-              - { name: label, label: Label, widget: string }
+              - { name: n, label: Number, widget: hidden }
+              - { name: code, label: Code, widget: hidden }
+              - { name: label, label: Name, widget: string }
+              - { name: color, label: Colour, widget: color, hint: "Keep enough contrast against the paper background (3:1)" }
               - { name: long, label: Description, widget: string }
-              - { name: wave, label: Wave, widget: hidden }
+              - { name: url, label: Page, widget: hidden }
           - name: nav
             label: Menu
             widget: list
             fields:
               - { name: label, label: Label, widget: string }
               - { name: url, label: URL, widget: string }
+              - { name: line, label: Line colour, widget: string, required: false }
           - name: socials
             label: Elsewhere
             widget: list

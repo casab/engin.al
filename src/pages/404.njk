@@ -1,17 +1,14 @@
 ---
 layout: layouts/base.njk
 permalink: /404.html
-title: No signal
+title: Not in service
 eleventyExcludeFromCollections: true
 ---
 <div class="wrap">
   <header class="page-head">
-    <span class="label">404 · no signal on this channel</span>
-    <h1>flatline</h1>
-    <svg class="flatline trace draw ch-circuits" viewBox="0 0 800 120" preserveAspectRatio="none" aria-hidden="true">
-      <path class="glow" pathLength="1" d="M0 60H330L345 20L360 100L375 60H800"/>
-      <path pathLength="1" d="M0 60H330L345 20L360 100L375 60H800"/>
-    </svg>
-    <p class="lede">This page doesn't exist, or it moved when the site was rebuilt. Try <a href="/projects/">projects</a>, <a href="/sound/">sound</a> or <a href="/">the start</a>.</p>
+    <p class="label">404 · this station is not in service</p>
+    <h1 class="display">Not in<br>service</h1>
+    <svg class="flatline" viewBox="0 0 800 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60H360L400 20H440L480 60H800"/></svg>
+    <p class="lede">This page doesn't exist, or it moved when the network was rebuilt. Try <a href="/">the map</a>, or one of the lines: <a href="/code/">Code</a>, <a href="/circuits/">Circuits</a>, <a href="/sound/">Sound</a>, <a href="/distance/">Distance</a>.</p>
   </header>
 </div>

@@ -1,51 +1,98 @@
 {
   "title": "engin.al",
-  "tagline": "things that oscillate",
+  "tagline": "four lines, one network",
   "url": "https://engin.al",
   "author": "Engin Al",
-  "description": "Engin Al builds backends, takes devices apart, writes drivers, plays synths and runs long distances. This is the log.",
+  "description": "Engin Al writes backends at Digital Loop. The rest is circuits and drivers, synths and guitars, and long distances, drawn as one transit network.",
   "og_image": "/engin-og.jpg",
-  "channels": [
+  "intro": [
+    "I write backends at Digital Loop. I trained as an electronics engineer and spent a stretch deep in machine learning.",
+    "Outside work: circuits and drivers, synths and guitars, long runs. Each is a line here. The good stops are where they cross."
+  ],
+  "lines": [
     {
       "id": "code",
-      "ch": 1,
-      "label": "code",
-      "long": "backends, machine learning, games, tools",
-      "wave": "activation"
+      "n": 1,
+      "code": "L1",
+      "label": "Code",
+      "color": "#2D3BFF",
+      "long": "Backends, machine learning, tools and sites.",
+      "url": "/code/"
     },
     {
       "id": "circuits",
-      "ch": 2,
-      "label": "circuits",
-      "long": "electronics, firmware, drivers, reverse engineering",
-      "wave": "square"
+      "n": 2,
+      "code": "L2",
+      "label": "Circuits",
+      "color": "#A87500",
+      "long": "Electronics, firmware, drivers and taking devices apart.",
+      "url": "/circuits/"
     },
     {
       "id": "sound",
-      "ch": 3,
-      "label": "sound",
-      "long": "synths, DJ sets, guitar, drums, Ableton",
-      "wave": "audio"
+      "n": 3,
+      "code": "L3",
+      "label": "Sound",
+      "color": "#D63526",
+      "long": "Synths, DJ sets, guitar, drums and Ableton.",
+      "url": "/sound/"
     },
     {
       "id": "distance",
-      "ch": 4,
-      "label": "distance",
-      "long": "half marathons, marathons, long rides",
-      "wave": "route"
+      "n": 4,
+      "code": "L4",
+      "label": "Distance",
+      "color": "#0B8A4E",
+      "long": "Half marathons, marathons and long rides.",
+      "url": "/distance/"
     }
   ],
   "nav": [
-    { "label": "projects", "url": "/projects/" },
-    { "label": "sound", "url": "/sound/" },
-    { "label": "distance", "url": "/distance/" },
-    { "label": "now", "url": "/now/" },
-    { "label": "about", "url": "/about/" }
+    {
+      "label": "Code",
+      "url": "/code/",
+      "line": "code"
+    },
+    {
+      "label": "Circuits",
+      "url": "/circuits/",
+      "line": "circuits"
+    },
+    {
+      "label": "Sound",
+      "url": "/sound/",
+      "line": "sound"
+    },
+    {
+      "label": "Distance",
+      "url": "/distance/",
+      "line": "distance"
+    },
+    {
+      "label": "Now",
+      "url": "/now/"
+    },
+    {
+      "label": "Network info",
+      "url": "/about/"
+    }
   ],
   "socials": [
-    { "label": "GitHub", "url": "https://github.com/casab" },
-    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/enginal" },
-    { "label": "Instagram", "url": "https://instagram.com/etikmaske" },
-    { "label": "Email", "url": "mailto:enginal@gmail.com" }
+    {
+      "label": "GitHub",
+      "url": "https://github.com/casab"
+    },
+    {
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/enginal"
+    },
+    {
+      "label": "Instagram",
+      "url": "https://instagram.com/etikmaske"
+    },
+    {
+      "label": "Email",
+      "url": "mailto:enginal@gmail.com"
+    }
   ]
 }

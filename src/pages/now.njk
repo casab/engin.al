@@ -4,19 +4,21 @@ permalink: /now/
 title: Now
 description: What I'm building, training for and listening to at the moment.
 ---
-<div class="narrow">
+{%- import "macros.njk" as m -%}
+<div class="wrap">
   <header class="page-head">
-    <span class="label">now · updated {{ now.updated | date("long") }}</span>
-    <h1>now</h1>
-    <p class="lede">What I'm doing at the moment. This page replaces the blog I never wrote.</p>
+    <p class="label">Now · updated {{ now.updated | date("long") }}</p>
+    <h1 class="display">Now</h1>
+    <p class="lede">What's running on the network at the moment. This page replaces the blog I never wrote.</p>
   </header>
-  <ul class="facts">
-    {%- if now.building %}<li class="ch-code"><span class="chip">building</span><span>{{ now.building }}</span></li>{% endif %}
-    {%- if now.training %}<li class="ch-distance"><span class="chip">training for</span><span>{{ now.training }}</span></li>{% endif %}
-    {%- if now.playing %}<li class="ch-sound"><span class="chip">practising</span><span>{{ now.playing }}</span></li>{% endif %}
-    {%- if now.listening %}<li class="ch-sound"><span class="chip">on repeat</span><span>{{ now.listening }}</span></li>{% endif %}
-  </ul>
-  <div class="prose section">
-    {{ now.body | md | safe }}
+  {%- if now.board and now.board.length %}{{ m.board(now.board, site.lines) }}{% endif %}
+  <div class="split split--7-5 section">
+    <div class="prose">{{ now.body | md | safe }}</div>
+    <dl class="credits credits--ruled">
+      {%- if now.building %}<dt>Building</dt><dd>{{ now.building }}</dd>{% endif %}
+      {%- if now.training %}<dt>Training for</dt><dd>{{ now.training }}</dd>{% endif %}
+      {%- if now.playing %}<dt>Practising</dt><dd>{{ now.playing }}</dd>{% endif %}
+      {%- if now.listening %}<dt>On repeat</dt><dd>{{ now.listening }}</dd>{% endif %}
+    </dl>
   </div>
 </div>
