@@ -1,0 +1,24 @@
+---
+layout: layouts/base.njk
+permalink: /notes/
+title: Notes
+description: Occasional longer notes.
+---
+<div class="wrap">
+  <header class="page-head">
+    <span class="label">notes</span>
+    <h1>notes</h1>
+    <p class="lede">The occasional write-up, when something takes more than a commit message to explain.</p>
+  </header>
+  <ul class="log" role="list">
+    {%- for n in collections.notes %}
+    <li class="row">
+      <span class="meta">{{ n.data.date | date }}</span>
+      <div>
+        <h3><a href="{{ n.url }}">{{ n.data.title }}</a></h3>
+        {%- if n.data.description %}<p>{{ n.data.description }}</p>{% endif %}
+      </div>
+    </li>
+    {%- endfor %}
+  </ul>
+</div>

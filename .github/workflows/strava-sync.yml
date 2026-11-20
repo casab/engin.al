@@ -1,0 +1,73 @@
+# Daily Strava sync: refresh the cached activities and routes, commit them if anything changed,
+# then deploy. Builds themselves never call Strava.
+#
+# Repository secrets:
+#   STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN   (from `npm run strava:auth`)
+#   GH_SECRETS_TOKEN   fine-grained token for THIS repo only, permission "Secrets: Read and write".
+#                      Strava sometimes rotates the refresh token; the workflow stores the new one with it.
+# Optional repository variables: STRAVA_RIDE_MIN_KM, STRAVA_TRIM_M. Optional secret: STRAVA_PRIVACY_ZONES.
+name: strava-sync
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: strava-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync from Strava
+        run: node scripts/strava-sync.mjs
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+          STRAVA_PRIVACY_ZONES: ${{ secrets.STRAVA_PRIVACY_ZONES }}
+          STRAVA_RIDE_MIN_KM: ${{ vars.STRAVA_RIDE_MIN_KM }}
+          STRAVA_TRIM_M: ${{ vars.STRAVA_TRIM_M }}
+          STRAVA_TOKEN_OUT: ${{ runner.temp }}/strava_refresh_token
+
+      - name: Store a rotated refresh token
+        run: |
+          f="$RUNNER_TEMP/strava_refresh_token"
+          if [ -s "$f" ]; then gh secret set STRAVA_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$f"; rm -f "$f"; fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git add src/_data/strava
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "strava-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "data: strava sync"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  # A push made with GITHUB_TOKEN doesn't start other workflows, so deploy from here.
+  deploy:
+    needs: sync
+    if: ${{ needs.sync.outputs.changed == 'true' }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main
+    secrets: inherit

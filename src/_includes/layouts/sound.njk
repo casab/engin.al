@@ -1,0 +1,27 @@
+---
+layout: layouts/base.njk
+channel: sound
+---
+{%- import "macros.njk" as m -%}
+<article class="wrap ch-sound">
+  <header class="page-head detail-head">
+    <a class="label" href="/sound/">← sound</a>
+    <h1>{{ title }}</h1>
+    {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
+    <ul class="facts">
+      <li><span class="label">date</span><span>{{ date | date("long") }}</span></li>
+      <li><span class="label">kind</span><span>{{ kind }}</span></li>
+      {%- if venue %}<li><span class="label">where</span><span>{{ venue }}</span></li>{% endif %}
+      {%- if gear and gear.length %}<li><span class="label">gear</span><span>{{ gear | join(", ") }}</span></li>{% endif %}
+    </ul>
+  </header>
+  {%- if embed_url %}{{ m.player({ url: embed_url, title: title, bandcamp_id: bandcamp_id } | player) }}{% endif %}
+  {%- if cover %}
+  <figure class="cover">
+    {% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 76rem) 76rem, 100vw" %}
+  </figure>
+  {%- endif %}
+  <div class="prose">
+    {{ content | safe }}
+  </div>
+</article>

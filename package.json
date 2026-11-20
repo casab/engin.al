@@ -1,49 +1,33 @@
 {
-  "name": "astro-paper",
-  "version": "4.7.0",
-  "private": false,
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "sync": "astro sync",
-    "astro": "astro",
-    "format:check": "prettier --check . --plugin=prettier-plugin-astro",
-    "format": "prettier --write . --plugin=prettier-plugin-astro",
-    "lint": "eslint ."
+  "name": "engin.al",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal site of Engin Al: things that oscillate.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.9"
   },
-  "dependencies": {
-    "@astrojs/check": "^0.9.3",
-    "@astrojs/rss": "^4.0.7",
-    "@resvg/resvg-js": "^2.6.2",
-    "astro": "^4.16.3",
-    "fuse.js": "^7.0.0",
-    "lodash.kebabcase": "^4.1.1",
-    "remark-collapse": "^0.1.2",
-    "remark-toc": "^9.0.0",
-    "satori": "^0.11.0",
-    "tailwindcss": "^3.4.11",
-    "typescript": "^5.5.3"
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve --port=8080",
+    "clean": "node -e \"fs.rmSync('_site',{recursive:true,force:true})\"",
+    "check": "node scripts/check.mjs",
+    "strip-metadata": "node scripts/strip-metadata.mjs",
+    "r2:media": "node scripts/r2-upload.mjs media",
+    "r2:file": "node scripts/r2-upload.mjs file",
+    "strava:auth": "node --env-file-if-exists=.env scripts/strava-auth.mjs",
+    "strava:sync": "node --env-file-if-exists=.env scripts/strava-sync.mjs",
+    "strava:demo": "node scripts/strava-demo.mjs"
   },
   "devDependencies": {
-    "@astrojs/react": "^3.6.2",
-    "@astrojs/sitemap": "^3.1.6",
-    "@astrojs/tailwind": "^5.1.0",
-    "@tailwindcss/typography": "^0.5.15",
-    "@types/github-slugger": "^1.3.0",
-    "@types/lodash.kebabcase": "^4.1.9",
-    "@types/react": "^18.3.6",
-    "@typescript-eslint/parser": "^8.5.0",
-    "astro-eslint-parser": "^1.0.3",
-    "eslint": "^9.10.0",
-    "eslint-plugin-astro": "^1.2.4",
-    "globals": "^15.9.0",
-    "prettier": "^3.3.3",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.6.6",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "typescript-eslint": "^8.5.0"
+    "@11ty/eleventy": "3.1.8",
+    "@11ty/eleventy-img": "7.1.1",
+    "@11ty/eleventy-plugin-rss": "2.0.4",
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/martian-mono": "5.3.0",
+    "@sveltia/cms": "0.262.1",
+    "cf": "1.0.0-rc.2",
+    "markdown-it": "15.0.3"
   }
 }

@@ -1,0 +1,246 @@
+import path from "node:path";
+import { readFileSync } from "node:fs";
+import markdownIt from "markdown-it";
+import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
+import { feedPlugin } from "@11ty/eleventy-plugin-rss";
+import { routeGeometry, weeklyTrace, sigil, channelWave } from "./src/_lib/signal.js";
+
+const TZ = "Europe/Istanbul";
+const SITE_URL = "https://engin.al/";
+const SHOW_DRAFTS = process.env.ELEVENTY_RUN_MODE === "serve" || !!process.env.SHOW_DRAFTS;
+
+const md = markdownIt({ html: true, linkify: true, typographer: true });
+// External links: no referrer leakage, no window.opener.
+const defaultLinkOpen =
+  md.renderer.rules.link_open || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  const href = tokens[idx].attrGet("href") || "";
+  if (/^https?:\/\//.test(href)) tokens[idx].attrSet("rel", "noopener noreferrer");
+  return defaultLinkOpen(tokens, idx, options, env, self);
+};
+
+const toDate = (d) => (d instanceof Date ? d : new Date(d));
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+export default function (eleventyConfig) {
+  eleventyConfig.setLibrary("md", md);
+
+  // ---- assets ----
+  eleventyConfig.addPassthroughCopy({ "src/assets/fonts": "assets/fonts" });
+  eleventyConfig.addPassthroughCopy({ "src/assets/js": "assets/js" });
+  eleventyConfig.addPassthroughCopy({ "src/assets/css": "assets/css" });
+  eleventyConfig.addPassthroughCopy({ public: "/" });
+  eleventyConfig.addGlobalData("showDrafts", SHOW_DRAFTS);
+  // drafts get no page of their own in a production build
+  eleventyConfig.addGlobalData("eleventyComputed.permalink", () => (data) =>
+    data.draft && !SHOW_DRAFTS ? false : data.permalink);
+  // CMS: self-hosted Sveltia bundle + lazily loaded backend chunks (no source maps)
+  const noMaps = { filter: ["**/*", "!**/*.map"] };
+  eleventyConfig.addPassthroughCopy({ "node_modules/@sveltia/cms/dist/sveltia-cms.js": "admin/sveltia-cms.js" });
+  eleventyConfig.addPassthroughCopy({ "node_modules/@sveltia/cms/dist/chunks": "admin/chunks" }, noMaps);
+  // full-size masters stay downloadable next to their page bundle
+  for (const dir of ["projects", "sound", "notes", "distance"]) {
+    eleventyConfig.addPassthroughCopy(`src/${dir}/**/*.{jpg,jpeg,png,webp,gif,svg}`);
+  }
+  eleventyConfig.addWatchTarget("src/assets/");
+  eleventyConfig.addWatchTarget("src/_lib/");
+
+  // ---- responsive images: every <img> pointing at a local raster becomes <picture> avif/webp/jpeg ----
+  eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
+    extensions: "html",
+    formats: ["avif", "webp", "jpeg"],
+    widths: [400, 800, 1400],
+    urlPath: "/img/",
+    outputDir: "_site/img/",
+    failOnError: true,
+    htmlOptions: {
+      imgAttributes: { loading: "lazy", decoding: "async" },
+      pictureAttributes: {},
+    },
+    sharpJpegOptions: { quality: 78, mozjpeg: true },
+    sharpWebpOptions: { quality: 76 },
+    sharpAvifOptions: { quality: 55 },
+  });
+
+  // ---- collections ----
+  const byDateDesc = (a, b) => toDate(b.data.date) - toDate(a.data.date);
+  // draft: true hides an entry everywhere in a production build; `npm run serve` (or SHOW_DRAFTS=1) shows them, marked
+  const published = (items) => (SHOW_DRAFTS ? items : items.filter((i) => !i.data.draft));
+  const projects = (api) => published(api.getFilteredByGlob("src/projects/*/index.md")).sort(byDateDesc);
+  const sound = (api) => published(api.getFilteredByGlob("src/sound/*/index.md")).sort(byDateDesc);
+  const notes = (api) => published(api.getFilteredByGlob("src/notes/**/*.md")).sort(byDateDesc);
+
+  eleventyConfig.addCollection("projects", projects);
+  eleventyConfig.addCollection("featuredProjects", (api) => projects(api).filter((p) => p.data.featured));
+  eleventyConfig.addCollection("sound", sound);
+  eleventyConfig.addCollection("notes", notes);
+  // Notes on top of synced Strava activities (src/distance/<activity-id>.md). They never render as pages.
+  eleventyConfig.addCollection("distanceNotes", (api) => api.getFilteredByGlob("src/distance/*.md"));
+  eleventyConfig.addCollection("feedItems", (api) => [...projects(api), ...sound(api), ...notes(api)].sort(byDateDesc));
+
+  // ---- filters ----
+  eleventyConfig.addFilter("md", (s) => (s ? md.render(String(s)) : ""));
+  eleventyConfig.addFilter("mdInline", (s) => (s ? md.renderInline(String(s)) : ""));
+  eleventyConfig.addFilter("date", (d, style = "dots") => {
+    if (!d) return "";
+    const date = toDate(d);
+    const p = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, ...o }).format(date);
+    if (style === "iso") return date.toISOString().slice(0, 10);
+    if (style === "year") return p({ year: "numeric" });
+    if (style === "month") return p({ month: "short", year: "numeric" });
+    if (style === "long") return p({ day: "numeric", month: "long", year: "numeric" });
+    return `${p({ year: "numeric" })}.${p({ month: "2-digit" })}.${p({ day: "2-digit" })}`;
+  });
+  eleventyConfig.addFilter("pad", (n, len = 2) => String(n).padStart(len, "0"));
+  eleventyConfig.addFilter("hex", (n, pad = 2) => "0x" + Number(n).toString(16).toUpperCase().padStart(pad, "0"));
+  eleventyConfig.addFilter("limit", (arr, n) => (arr || []).slice(0, n));
+  eleventyConfig.addFilter("json", (v) => JSON.stringify(v).replace(/</g, "\\u003c"));
+  eleventyConfig.addFilter("absoluteUrl", (url, base = SITE_URL) => new URL(url, base).href);
+  eleventyConfig.addFilter("stripHtml", (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+  eleventyConfig.addFilter("km", (m, digits = 1) => (Number(m || 0) / 1000).toFixed(digits));
+  eleventyConfig.addFilter("duration", (s) => {
+    s = Math.round(Number(s || 0));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
+  });
+  // min/km for runs, km/h for rides
+  eleventyConfig.addFilter("pace", (a) => {
+    if (!a || !a.distance_m || !a.moving_s) return "";
+    if (a.sport === "ride") return `${((a.distance_m / 1000) / (a.moving_s / 3600)).toFixed(1)} km/h`;
+    const spk = a.moving_s / (a.distance_m / 1000);
+    return `${Math.floor(spk / 60)}:${String(Math.round(spk % 60)).padStart(2, "0")} /km`;
+  });
+  eleventyConfig.addFilter("withChannel", (items, ch) => (items || []).filter((i) => (i.data.channels || []).includes(ch)));
+  eleventyConfig.addFilter("groupByYear", (items) => {
+    const groups = new Map();
+    for (const i of items || []) {
+      const y = toDate(i.data ? i.data.date : i.date).getUTCFullYear();
+      if (!groups.has(y)) groups.set(y, []);
+      groups.get(y).push(i);
+    }
+    return [...groups.entries()];
+  });
+  eleventyConfig.addFilter("channelInfo", (id, channels) => (channels || []).find((c) => c.id === id) || { id, ch: 0, label: id });
+  // path of a file inside the page bundle, relative to the input dir (for <img src> and links)
+  eleventyConfig.addFilter("bundle", (file, inputPath) => {
+    if (!file) return "";
+    if (/^(https?:)?\//.test(file)) return file;
+    const dir = path.posix.dirname(inputPath.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^src\//, ""));
+    return "/" + path.posix.join(dir, file);
+  });
+
+  // ---- distance: Strava cache + hand-written notes ----
+  // activities.json is written by scripts/strava-sync.mjs; routes/<id>.json hold trimmed, simplified tracks.
+  eleventyConfig.addFilter("distanceLog", (strava, notesColl) => {
+    const list = (strava && strava.activities && strava.activities.activities) || [];
+    const byId = new Map((notesColl || []).map((n) => [String(n.data.strava_id || n.fileSlug), n]));
+    return list
+      .map((a) => {
+        const n = byId.get(String(a.id));
+        return { ...a, title: (n && n.data.title) || a.name, note: n ? n.content : "", hidden: !!(n && n.data.hidden), photo: n && n.data.photo, photoAlt: n && n.data.photo_alt, notePath: n && n.inputPath };
+      })
+      .filter((a) => !a.hidden)
+      .sort((a, b) => toDate(b.date) - toDate(a.date));
+  });
+  eleventyConfig.addFilter("route", (id, strava) => {
+    const r = strava && strava.routes && strava.routes[String(id)];
+    return r ? routeGeometry(r) : null;
+  });
+  eleventyConfig.addFilter("weeklyTrace", (weeks, opts) => weeklyTrace(weeks, opts));
+  eleventyConfig.addFilter("weeklyYears", (weekly) => Object.keys(weekly || {}).sort().reverse());
+  eleventyConfig.addFilter("weeklyMax", (weekly) =>
+    Math.max(1, ...Object.values(weekly || {}).flatMap((y) => [...(y.run || []), ...(y.ride || [])])));
+  eleventyConfig.addFilter("sigil", (seed) => sigil(seed));
+  eleventyConfig.addFilter("channelWave", (kind) => channelWave(kind));
+
+  // ---- media on R2 (media.engin.al) ----
+  // src/_data/media.json (written by scripts/r2-upload.mjs) lists files that live in the R2 bucket.
+  // Those are served from R2 and resized by Cloudflare (/cdn-cgi/image); anything not listed
+  // falls back to the local file + build-time eleventy-img pipeline (e.g. fresh CMS uploads).
+  const MEDIA_BASE = "https://media.engin.al";
+  const MEDIA_WIDTHS = [400, 800, 1400];
+  let MEDIA = {};
+  const loadMedia = () => {
+    try { MEDIA = JSON.parse(readFileSync("src/_data/media.json", "utf8")); } catch { MEDIA = {}; }
+  };
+  loadMedia();
+  eleventyConfig.on("eleventy.before", loadMedia);
+  eleventyConfig.addWatchTarget("src/_data/media.json");
+  const mediaKey = (src) => String(src || "").replace(/^\/+/, "");
+  const cdn = (key, m, width, extra = "") =>
+    `${MEDIA_BASE}/cdn-cgi/image/width=${Math.min(width, m.w || width)},quality=80,format=auto,fit=scale-down${extra}/${key}?v=${m.v}`;
+
+  // {% image src, alt, sizes, eager %}: src is a site path like /projects/<bundle>/cover.jpg
+  eleventyConfig.addShortcode("image", (src, alt = "", sizes = "100vw", eager = false) => {
+    const key = mediaKey(src);
+    const m = MEDIA[key];
+    const loading = eager ? `loading="eager" fetchpriority="high"` : `loading="lazy"`;
+    if (m && m.w) {
+      const widths = [...new Set(MEDIA_WIDTHS.map((w) => Math.min(w, m.w)))];
+      const srcset = widths.map((w) => `${cdn(key, m, w)} ${w}w`).join(", ");
+      return `<img src="${cdn(key, m, 800)}" srcset="${srcset}" sizes="${esc(sizes)}" width="${m.w}" height="${m.h}" alt="${esc(alt)}" ${loading} decoding="async" eleventy:ignore>`;
+    }
+    return `<img src="${esc(src)}" alt="${esc(alt)}" sizes="${esc(sizes)}" ${loading}>`; // local → eleventy-img transform
+  });
+  eleventyConfig.addFilter("mediaOg", (src) => {
+    const key = mediaKey(src);
+    const m = MEDIA[key];
+    return m && m.w ? cdn(key, m, 1200).replace("format=auto", "format=jpeg") : src;
+  });
+  eleventyConfig.addFilter("mediaUrl", (src) => {
+    const key = mediaKey(src);
+    return MEDIA[key] ? `${MEDIA_BASE}/${key}?v=${MEDIA[key].v}` : src;
+  });
+
+  // ---- click-to-load players (SoundCloud, Mixcloud, Bandcamp, YouTube) ----
+  eleventyConfig.addFilter("player", (item) => toPlayer(item || {}));
+  function toPlayer(item) {
+    let u;
+    try { u = new URL(item.url); } catch { return null; }
+    const parts = u.pathname.split("/").filter(Boolean);
+    const label = item.title || u.hostname.replace(/^www\./, "") + u.pathname.replace(/\/$/, "");
+    if (/(^|\.)soundcloud\.com$/.test(u.hostname) && parts.length) {
+      const isTrack = parts.length === 2 && !["sets", "tracks", "albums", "likes", "reposts", "popular-tracks"].includes(parts[1]);
+      const embed = "https://w.soundcloud.com/player/?" + new URLSearchParams({
+        url: u.href, color: "#ff5ec8", auto_play: "true", hide_related: "true", show_comments: "false",
+        show_user: "true", show_reposts: "false", show_teaser: "false", visual: "false",
+      });
+      return { type: "soundcloud", url: u.href, label, embed, height: isTrack ? 166 : 320 };
+    }
+    if (/(^|\.)mixcloud\.com$/.test(u.hostname) && parts.length >= 2) {
+      const feed = "/" + parts.slice(0, 2).join("/") + "/";
+      const embed = "https://player-widget.mixcloud.com/widget/iframe/?" + new URLSearchParams({ hide_cover: "1", mini: "1", light: "0", autoplay: "1", feed });
+      return { type: "mixcloud", url: u.href, label, embed, height: 60 };
+    }
+    if (/(^|\.)bandcamp\.com$/.test(u.hostname) && item.bandcamp_id) {
+      const kind = item.bandcamp_type || (parts[0] === "track" ? "track" : "album");
+      const embed = `https://bandcamp.com/EmbeddedPlayer/${kind}=${item.bandcamp_id}/size=large/bgcol=0b0d12/linkcol=ff5ec8/artwork=small/tracklist=false/transparent=true/`;
+      return { type: "bandcamp", url: u.href, label, embed, height: 120 };
+    }
+    const yt = /(^|\.)youtube\.com$/.test(u.hostname) ? u.searchParams.get("v") || (parts[0] === "live" ? parts[1] : null)
+      : /^youtu\.be$/.test(u.hostname) ? parts[0] : null;
+    if (yt) return { type: "youtube", url: u.href, label, embed: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(yt)}?autoplay=1`, height: 0, video: true };
+    return { type: "link", url: u.href, label, embed: null };
+  }
+
+  eleventyConfig.addPlugin(feedPlugin, {
+    type: "atom",
+    outputPath: "/feed.xml",
+    collection: { name: "feedItems", limit: 30 },
+    metadata: {
+      language: "en",
+      title: "engin.al",
+      subtitle: "Projects, sounds and notes from Engin Al.",
+      base: SITE_URL,
+      author: { name: "Engin Al" },
+    },
+  });
+
+  return {
+    dir: { input: "src", includes: "_includes", data: "_data", output: "_site" },
+    // Markdown written in the CMS is never run through a template engine (no surprises with "{{").
+    markdownTemplateEngine: false,
+    htmlTemplateEngine: "njk",
+    templateFormats: ["njk", "md"],
+  };
+}
