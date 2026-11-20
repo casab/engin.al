@@ -2,7 +2,7 @@
 //  - every internal href/src resolves to a file
 //  - every <img> has an alt attribute
 //  - no inline <script> code or style="" attributes (they would break the strict CSP)
-//  - no demo Strava data in CI
+//  - no demo Strava data in CI (CI env var or --ci, used by the Cloudflare build)
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
@@ -57,7 +57,7 @@ for await (const file of walk(ROOT)) {
 try {
   const strava = JSON.parse(await readFile("src/_data/strava/activities.json", "utf8"));
   const msg = "src/_data/strava/activities.json holds DEMO data: run `node scripts/strava-demo.mjs --clear`";
-  if (strava.demo && process.env.CI) errors.push(msg);
+  if (strava.demo && (process.env.CI || process.argv.includes("--ci"))) errors.push(msg);
   else if (strava.demo) console.warn(`[check] warning: ${msg}`);
 } catch {}
 

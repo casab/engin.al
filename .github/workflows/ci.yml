@@ -1,0 +1,38 @@
+# Build + check on every push and pull request. Deploys are done by Cloudflare's Git integration
+# (Workers Builds, configured in the dashboard with wrangler.jsonc), not by this workflow.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cache optimised images
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: eleventy-img-${{ hashFiles('src/**/*.jpg', 'src/**/*.jpeg', 'src/**/*.png', 'src/**/*.webp') }}
+          restore-keys: eleventy-img-
+
+      - name: Install (exact versions from package-lock.json)
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Build and check (links, alt text, CSP-safe markup, no demo data)
+        run: npm run build:deploy
