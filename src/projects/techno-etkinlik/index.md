@@ -11,7 +11,7 @@ links:
     url: https://technoetkinlik.com
   - label: instagram
     url: https://instagram.com/technoetkinlik
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 [@technoetkinlik](https://instagram.com/technoetkinlik) started as an Instagram page about upcoming techno and electronic music events. Behind it is now one event catalog that feeds everything:
 

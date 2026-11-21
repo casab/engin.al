@@ -11,7 +11,7 @@ links:
     url: https://autoswitchkvm.com
   - label: repo
     url: https://github.com/casab/AutoSwitchKVM
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 A KVM switch moves the monitor and the USB devices between two computers, but Bluetooth devices stay with whichever computer they last paired with. Every switch meant re-pairing a Magic Trackpad by hand, or pressing channel keys on every keyboard and mouse.
 

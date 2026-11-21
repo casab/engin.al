@@ -14,7 +14,7 @@ links:
     url: https://github.com/casab/zmk-rgb-led-overlay
   - label: lazy layer mod
     url: https://github.com/casab/zmk-lazy-layer-mod
-draft: true  # seeded from the repo README: review, then set to false (or untick Draft in the CMS)
+draft: false
 ---
 My keyboard is a Reviung41 with a nice!nano running ZMK. ZMK's underglow lights the whole strip with one effect, so the base module, **zmk-rgb-led-overlay**, adds a virtual LED strip between the underglow and the real LEDs. Indicators draw on top of it without breaking anything ZMK already does.
 

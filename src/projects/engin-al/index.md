@@ -9,7 +9,7 @@ featured: false
 links:
   - label: repo
     url: https://github.com/casab/engin.al
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 The map on the home page is generated when the site builds: every project, recording, milestone and race is a station, ordered by date. Work that crosses disciplines becomes an interchange. It ships as plain SVG, and the line filter is pure CSS.
 

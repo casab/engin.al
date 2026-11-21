@@ -9,7 +9,7 @@ featured: false
 links:
   - label: site
     url: https://uncvl.xyz
-draft: true  # seeded from the repo README: review, then set to false (or untick Draft in the CMS)
+draft: false
 ---
 A static site for an Istanbul electronic music collective. Events roll from upcoming to past on their own with a daily rebuild, posters and photos live on R2 and get resized at the edge, and editors use Sveltia CMS with a review-before-publish workflow.
 

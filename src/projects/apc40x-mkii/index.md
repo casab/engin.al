@@ -9,7 +9,7 @@ featured: true
 links:
   - label: site
     url: https://apc40x.com
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 The APC40 mkII is built for launching clips. This control surface script turns it into a Push-style instrument:
 

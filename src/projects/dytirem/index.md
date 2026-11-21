@@ -9,7 +9,7 @@ featured: false
 links:
   - label: site
     url: https://dytirem.com
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 A public site with recipes and articles, and behind a login, a small platform for the dietitian's clients: their diet plans, a food diary and progress tracking. Invite-only, with Turkish data-protection (KVKK) texts.
 
