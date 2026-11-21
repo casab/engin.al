@@ -97,7 +97,9 @@ collections:
     fields:
       - { name: title, label: Title, widget: string }
       - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
-      - { name: kind, label: Kind, widget: select, options: [live set, dj mix, track, release, session], default: live set }
+      - { name: artist, label: As, widget: select, options: [Balgum, Senst], required: false, hint: "Which name it went out under" }
+      - { name: kind, label: Kind, widget: select, options: [dj set, live set, dj mix, track, release, session], default: dj set }
+      - { name: length, label: Length, widget: string, required: false, hint: "e.g. 1:14:54 or 60 min" }
       - name: lines
         label: Lines
         widget: select
@@ -111,9 +113,16 @@ collections:
           - { label: "L4 Distance", value: distance }
       - { name: venue, label: Where, widget: string, required: false }
       - { name: summary, label: Summary, widget: text, required: false }
-      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "SoundCloud, Mixcloud, YouTube or Bandcamp URL. Shown as a click-to-load player." }
+      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "SoundCloud, Spotify, Mixcloud, YouTube or Bandcamp URL. Shown as a click-to-load player." }
       - { name: bandcamp_id, label: Bandcamp album/track id, widget: string, required: false, hint: "Bandcamp players need the numeric id (Share → Embed)." }
       - { name: gear, label: Gear used, widget: list, required: false }
+      - name: links
+        label: Links
+        widget: list
+        required: false
+        fields:
+          - { name: label, label: Label, widget: string, hint: "Event, Spotify, Bandcamp…" }
+          - { name: url, label: URL, widget: string }
       - { name: cover, label: Cover image, widget: image, required: false }
       - { name: cover_alt, label: Cover description (alt text), widget: string, required: false }
       - { name: draft, label: Draft, widget: boolean, default: false }
@@ -285,6 +294,20 @@ collections:
               - { name: color, label: Colour, widget: color, hint: "Keep enough contrast against the paper background (3:1)" }
               - { name: long, label: Description, widget: string }
               - { name: url, label: Page, widget: hidden }
+          - name: aliases
+            label: Names (on the Sound line)
+            widget: list
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: role, label: Role, widget: string, hint: "DJ, Producer…" }
+              - { name: note, label: Note, widget: text }
+              - name: links
+                label: Links
+                widget: list
+                fields:
+                  - { name: label, label: Label, widget: string }
+                  - { name: url, label: URL, widget: string }
+          - { name: strava_url, label: Strava profile, widget: string, required: false }
           - name: nav
             label: Menu
             widget: list

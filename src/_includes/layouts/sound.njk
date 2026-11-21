@@ -16,9 +16,12 @@ layout: layouts/base.njk
     <dl class="credits credits--ruled">
       <dt>Lines</dt><dd>{{ m.tags(lines, site.lines) }}</dd>
       <dt>Date</dt><dd>{{ date | date("long") }}</dd>
+      {%- if artist %}<dt>As</dt><dd>{{ artist }}</dd>{% endif %}
       <dt>Kind</dt><dd>{{ kind }}</dd>
+      {%- if length %}<dt>Length</dt><dd>{{ length }}</dd>{% endif %}
       {%- if venue %}<dt>Where</dt><dd>{{ venue }}</dd>{% endif %}
       {%- if gear and gear.length %}<dt>Gear</dt><dd>{{ gear | join(", ") }}</dd>{% endif %}
+      {%- for k in links %}<dt>{{ k.label or "Link" }}</dt><dd><a href="{{ k.url }}" rel="noopener noreferrer">{{ k.url | replace("https://", "") | replace("www.", "") }} ↗</a></dd>{% endfor %}
     </dl>
   </header>
   <div class="wrap lp-body">

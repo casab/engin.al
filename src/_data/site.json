@@ -34,7 +34,7 @@
       "code": "L3",
       "label": "Sound",
       "color": "#D63526",
-      "long": "Synths, DJ sets, guitar, drums and Ableton.",
+      "long": "DJ sets as Balgum, tracks as Senst, plus synths, guitar, drums and Ableton.",
       "url": "/sound/"
     },
     {
@@ -83,6 +83,10 @@
       "url": "https://github.com/casab"
     },
     {
+      "label": "SoundCloud",
+      "url": "https://soundcloud.com/balgum"
+    },
+    {
       "label": "LinkedIn",
       "url": "https://www.linkedin.com/in/enginal"
     },
@@ -91,8 +95,41 @@
       "url": "https://instagram.com/etikmaske"
     },
     {
+      "label": "Strava",
+      "url": "https://www.strava.com/athletes/29741063"
+    },
+    {
       "label": "Email",
       "url": "mailto:enginal@gmail.com"
     }
-  ]
+  ],
+  "aliases": [
+    {
+      "name": "Balgum",
+      "role": "DJ",
+      "note": "Techno, hard dance, drum and bass, hardcore, freetekno, noise and breakcore. Mostly at Uncivilization nights in İzmir.",
+      "links": [
+        {
+          "label": "SoundCloud",
+          "url": "https://soundcloud.com/balgum"
+        },
+        {
+          "label": "Resident Advisor",
+          "url": "https://ra.co/dj/balgum"
+        }
+      ]
+    },
+    {
+      "name": "Senst",
+      "role": "Producer",
+      "note": "The name my own tracks go out under. First release: Confusion (2020).",
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/artist/266Jp19qo5Tb7hKkj9y2yy"
+        }
+      ]
+    }
+  ],
+  "strava_url": "https://www.strava.com/athletes/29741063"
 }
