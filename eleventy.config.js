@@ -5,6 +5,7 @@ import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import { routeGeometry, weeklyTrace } from "./src/_lib/signal.js";
 import { buildNetwork, lineStations } from "./src/_lib/network.js";
+import { cardSpec, registerCard, renderCards } from "./scripts/og.mjs";
 
 const TZ = "Europe/Istanbul";
 const SITE_URL = "https://engin.al/";
@@ -91,7 +92,7 @@ export default function (eleventyConfig) {
     try { return JSON.parse(readFileSync("src/_data/strava/activities.json", "utf8")); } catch { return { activities: [] }; }
   };
   eleventyConfig.addWatchTarget("src/_data/strava/");
-  eleventyConfig.addCollection("stations", (api) => {
+  const buildStations = (api) => {
     const fromItem = (item, kind, meta) => ({
       id: item.url || item.fileSlug,
       title: item.data.title,
@@ -134,6 +135,29 @@ export default function (eleventyConfig) {
       ...stops(api).map((p) => fromItem(p, "stop", String(toDate(p.data.date).getUTCFullYear()))),
       ...races,
     ].sort((a, b) => b.date - a.date);
+  };
+  eleventyConfig.addCollection("stations", buildStations);
+  // one entry per year with stations, newest first: the /years/<yyyy>/ pages paginate over it
+  eleventyConfig.addCollection("stationYears", (api) => {
+    const groups = new Map();
+    for (const s of buildStations(api)) {
+      const y = s.date.getUTCFullYear();
+      if (!groups.has(y)) groups.set(y, []);
+      groups.get(y).push(s);
+    }
+    const years = [...groups.keys()].sort((a, b) => b - a);
+    return years.map((year, i) => {
+      const stations = groups.get(year);
+      const lines = {};
+      for (const s of stations) for (const l of s.lines) lines[l] = (lines[l] || 0) + 1;
+      return {
+        year, stations, lines,
+        interchanges: stations.filter((s) => s.lines.length > 1).length,
+        races: stations.filter((s) => s.activity && s.activity.race).length,
+        newer: years[i - 1] || null,
+        older: years[i + 1] || null,
+      };
+    });
   });
 
   // ---- filters ----
@@ -146,6 +170,7 @@ export default function (eleventyConfig) {
     if (style === "iso") return date.toISOString().slice(0, 10);
     if (style === "year") return p({ year: "numeric" });
     if (style === "month") return p({ month: "short", year: "numeric" });
+    if (style === "day") return p({ day: "numeric", month: "short" });
     if (style === "long") return p({ day: "numeric", month: "long", year: "numeric" });
     return `${p({ year: "numeric" })}.${p({ month: "2-digit" })}.${p({ day: "2-digit" })}`;
   });
@@ -202,6 +227,53 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("onLine", (items, id) => (items || []).filter((i) => ((i.data ? i.data.lines : i.lines) || []).includes(id)));
   eleventyConfig.addFilter("interchanges", (stations) => (stations || []).filter((s) => (s.lines || []).length > 1));
   eleventyConfig.addFilter("first", (arr) => (arr || [])[0]);
+  // sitemap.xml: collections.all has only the first page of a paginated template, so add the line and year pages
+  eleventyConfig.addFilter("sitemapUrls", (all, lines, years) => {
+    const out = new Map();
+    for (const p of all || []) if (p.url && p.url.endsWith("/") && !p.data.draft) out.set(p.url, /^\/(projects|sound|notes)\//.test(p.url) ? p.data.date : null);
+    for (const l of lines || []) if (!out.has(l.url)) out.set(l.url, null);
+    for (const y of years || []) out.set(`/years/${y.year}/`, null);
+    return [...out].map(([url, date]) => ({ url, date })).sort((a, b) => a.url.localeCompare(b.url));
+  });
+  // Station pages: for each line the entry is on, its place on that line and the stations either side
+  eleventyConfig.addFilter("nextStops", (stations, url, ids, lines) => (ids || []).map((id) => {
+    const list = lineStations(stations, id, lines); // newest first
+    const i = list.findIndex((s) => s.url === url);
+    if (i === -1) return null;
+    return { line: lines.find((l) => l.id === id), n: list.length - i, total: list.length, newer: list[i - 1] || null, older: list[i + 1] || null };
+  }).filter(Boolean));
+  // the lines that have a count in { lineId: n } (a year page draws only those)
+  eleventyConfig.addFilter("linesIn", (lines, counts) => (lines || []).filter((l) => counts && counts[l.id]));
+  // compact station data for the map's hover/tap cards (index = data-st on the station)
+  eleventyConfig.addFilter("mapCards", (stations, lines) => {
+    const code = Object.fromEntries((lines || []).map((l) => [l.id, [l.code, l.label]]));
+    const month = (d) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, month: "short", year: "numeric" }).format(toDate(d));
+    // the card already shows month + year, so a bare year in meta (a project's status) would repeat it
+    const meta = (s) => (s.meta || "").split(" · ").filter((p) => p !== String(toDate(s.date).getUTCFullYear())).join(" · ");
+    return (stations || []).map((s) => ({ t: s.title, d: month(s.date), m: meta(s), s: s.summary, u: s.url, l: s.lines.map((id) => [id, ...(code[id] || [id, id])]) }));
+  });
+  // /search.json: every station and note, newest first, with short keys (search.js reads them)
+  const KIND = { project: "Project", sound: "Recording", stop: "Milestone", race: "Run", ride: "Ride", note: "Note" };
+  const trim = (s, n) => { s = String(s || "").replace(/<[^>]+>/g, "").replace(/[#*_`>\[\]]/g, "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + "…" : s; };
+  eleventyConfig.addFilter("searchIndex", (stations, notes) => [
+    ...(stations || []).map((s) => ({
+      t: s.title,
+      s: s.short && s.short !== s.title ? s.short : undefined,
+      l: s.lines,
+      y: toDate(s.date).getUTCFullYear(),
+      k: KIND[s.kind] || s.kind,
+      m: s.meta || undefined,
+      x: (s.data && s.data.stack && s.data.stack.length) ? s.data.stack.join(" ") : undefined,
+      u: s.url || undefined,
+      d: trim(s.summary || s.note, 160) || undefined,
+    })),
+    ...(notes || []).map((n) => ({
+      t: n.data.title, l: [], y: toDate(n.data.date).getUTCFullYear(), k: KIND.note, u: n.url,
+      x: (n.data.tags || []).join(" ") || undefined, d: trim(n.data.description, 160) || undefined,
+    })),
+  ]);
+  // A–Z by title (the /search/ page without JS)
+  eleventyConfig.addFilter("byTitle", (items) => (items || []).slice().sort((a, b) => String(a.title).localeCompare(String(b.title), "tr")));
   // [[year, stations], …], newest year first (input is already newest first)
   eleventyConfig.addFilter("byYear", (stations) => {
     const groups = new Map();
@@ -225,6 +297,14 @@ export default function (eleventyConfig) {
   };
   loadMedia();
   eleventyConfig.on("eleventy.before", loadMedia);
+
+  // Share cards (scripts/og.mjs): base.njk asks for the page's card URL; every card is drawn after the build.
+  eleventyConfig.addFilter("ogCard", (url, data, site) => registerCard(url, cardSpec(url, data || {}, site), site));
+  eleventyConfig.on("eleventy.after", async ({ directories }) => {
+    const t = Date.now();
+    const { total, drawn } = await renderCards(directories.output);
+    console.log(`[og] ${total} share cards (${drawn} drawn, the rest cached) in ${Date.now() - t} ms`);
+  });
   eleventyConfig.addWatchTarget("src/_data/media.json");
   const mediaKey = (src) => String(src || "").replace(/^\/+/, "");
   const cdn = (key, m, width, extra = "") =>

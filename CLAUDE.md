@@ -70,8 +70,14 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/_includes/macros.njk` | `network` (map + phone diagram + filter), `board`, `player`, `tags` |
 | `src/assets/css/site.css` | the whole design system (layers, tokens) |
 | `src/assets/js/site.js` | click-to-load players, split-flap flip, `#f-<line>` filter hash. Everything works without it |
+| `src/assets/js/map.js` | the explorable map (pan, timeline, keyboard, station cards); imported by `site.js` |
+| `src/assets/js/search.js` | the search dialog and the live search on `/search/`; imported by `site.js` on first use |
+| `src/pages/years.njk`, `year.njk` | `/years/` and `/years/<yyyy>/`, paginated over the `stationYears` collection |
+| `src/pages/search.njk`, `search-index.njk` | `/search/` (A–Z by line, the no-JS fallback) and `/search.json` (`searchIndex` filter) |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
-| `scripts/` | `check.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
+| `scripts/` | `check.mjs`, `og.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
+| `scripts/og.mjs`, `scripts/og-fonts/` | share cards (see below); static Archivo cuts made by `scripts/og-fonts.py` |
+| `src/pages/sitemap.njk` | `/sitemap.xml` (`sitemapUrls` filter adds the paginated line and year pages) |
 
 **Stations collection** (`eleventy.config.js`): merges projects, sound, stops and Strava races into plain
 objects (`id, title, short, date, lines, url, kind, meta, summary, draft, …`). The map, line pages and home
@@ -83,8 +89,19 @@ shows it.
 One column per station ordered by date (nothing collides however dates bunch up), a fixed lane per line,
 interchanges bend the non-first lines over at 45° to run beside the first, all lines end at the "Now"
 terminus. Output is plain SVG; the line filter is CSS `:has()` on radio inputs. A wide map opens scrolled to
-the right end (`direction: rtl` trick) with a fade on the left. Phones (< 56rem) get the same stations as a
-vertical line diagram. Long titles need a `short` label or they collide.
+the right end (`direction: rtl` trick) with a fade on the left. Phones (< 40rem) get the same stations as a
+vertical line diagram; tablets and up get the map. Long titles need a `short` label or they collide.
+
+- **Density:** consecutive plain single-line stations sit `TIGHT` (90 px) apart; interchanges keep the wide
+  column for their bends. Labels take one of two tiers; a label that would need a third is `minor` (hidden
+  until hover/focus, still in the card). Interchanges, projects and recordings always keep their label.
+- **`src/assets/js/map.js`** (loaded by `site.js` only where a map is drawn): drag to pan with the mouse,
+  ←/→/Home/End between stations, a **timeline** ("Jump to" one button per year + Now; highlights the year in
+  view; hidden without JS) and a **station card** (hover, keyboard focus, or the first tap on touch; the
+  second tap follows the link; Escape closes). Card data is a `<script type="application/json"
+  data-map-data>` block built by the `mapCards` filter, indexed by `data-st`. The card is positioned with
+  `style.setProperty("--x"/"--y")` (CSSOM is fine under the CSP; `style=""` attributes are not).
+- In the rtl scroller `scrollLeft` is 0 at the right end and negative further left.
 
 ## Phones
 
@@ -97,6 +114,45 @@ vertical line diagram. Long titles need a `short` label or they collide.
   and choosing a line filter shows every station of that line. When adding filter rules, the reveal rules
   are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
 - Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
+
+## Station pages and share cards
+
+- Project and recording pages end with **Next stops**: per line the entry is on, its number on that line and
+  the older/newer station (`nextStops` filter over `lineStations()`, `nextStops` macro). It replaced the old
+  projects-only pager.
+- A **Share** button (hidden without JS) on project, recording and note pages: the system share sheet on
+  touch devices, "Copy link" + a toast elsewhere. It shares the canonical `https://engin.al/...` URL.
+- **Share cards:** every page's `og:image` is `/og/<path>.png` (1200×630), drawn after each build by
+  `scripts/og.mjs` (satori → SVG, `@resvg/resvg-wasm` → PNG; no browser, works in Workers Builds). `base.njk`
+  calls the `ogCard` filter with the page's data; `cardSpec()` decides the kicker/headline/sub/lines per page
+  type; `renderCards()` runs on `eleventy.after`. Cached in `.cache/og` by content + code hash.
+  `check.mjs` fails if a page has no card. satori can't read variable fonts, so `scripts/og-fonts/` holds
+  static WOFF cuts of Archivo (62%/850, 125%/650, 100%/500); regenerate with `scripts/og-fonts.py` (needs
+  `fonttools` + `brotli` in a venv) only if the card needs another style.
+- `robots.txt` points at `/sitemap.xml`.
+
+## Year pages
+
+- `stationYears` collection (`eleventy.config.js`, built from the same `buildStations()` as `stations`):
+  `{ year, stations, lines: { id: n }, interchanges, races, newer, older }`, newest first. Only years with
+  stations get a page (drafts count only in `npm run serve`, so 2012/2015 show locally but not live).
+- A year page draws `network` with only that year's lines (`linesIn` filter), no timeline, and the terminus
+  is the next year (`end` argument of the macro: `{ label, url, note }`; default is Now → `/now/`).
+- "In numbers" uses the Strava `weekly` totals (`run_km`, `ride_km`), which count every activity, not only
+  the ones on the map; the page says so.
+- Linked from the map's timeline ("Year by year →"), each year on a line page, the menu and the footer.
+
+## Search
+
+- `/search.json` = `{ lines, items }`: every station plus notes, newest first, short keys (`t` title, `s` short,
+  `l` lines, `y` year, `k` kind, `m` meta, `x` stack/tags, `u` url, `d` summary ≤ 160 chars). ~100 items ≈ 15 KB.
+- The header **Search** link goes to `/search/`; with JS it (and Ctrl/Cmd+K, `/`) opens a `<dialog>` combobox
+  instead. Every typed word must match somewhere; title prefix > word start in title > short > meta/stack/
+  year/kind/line > summary; ties stay newest first. Turkish letters fold (ı/İ/I → i, ş → s, …) one char at a
+  time so highlights line up. Line chips filter; ↑/↓/Enter (Ctrl+Enter = new tab); Escape always closes the
+  dialog (a `type="search"` input would otherwise just clear itself).
+- On `/search/` the same UI mounts in the page, keeps `?q=` in the URL and hides the A–Z list while there's
+  a query. Phones get the dialog full screen.
 
 ## Line pages
 
@@ -170,7 +226,10 @@ vertical line diagram. Long titles need a `short` label or they collide.
 ## Gotchas
 
 - `npm run build:deploy` deletes `_site`, which breaks a running `npm run serve`: restart the dev server.
-  The dev server also caches `_data` (new Strava routes didn't show until a restart).
+  The other way round too: a running dev server rebuilds into the same `_site` **with drafts**, so stop it
+  before checking a production build (`ls _site/years` once showed the draft-only years 2012/2015).
+  The dev server also caches `_data` (new Strava routes didn't show until a restart) and doesn't always pick up
+  changes to filters in `eleventy.config.js`: restart it.
 - Git Bash on Windows rewrites arguments that start with `/` into Windows paths: use `MSYS_NO_PATHCONV=1`.
 - Full-size screenshots: headless Edge (`msedge --headless=new --screenshot --window-size=1440,2000`) with
   a fresh `--user-data-dir` per run (a reused profile silently produces nothing). Its minimum window width is

@@ -11,6 +11,7 @@ const LANE_TOP = 120;
 const LANE_GAP = 120;
 const START = 24;
 const SPACING = 150;
+const TIGHT = 90; // between two plain (non-interchange) stations: a long history stays compact
 const FLAT = 16; // half-length of the straight run through an interchange
 const PAIR = 18; // distance between lines running side by side
 const r = (n) => Math.round(n * 10) / 10;
@@ -55,7 +56,10 @@ export function buildNetwork(stations, lines) {
   // columns: an interchange gets room on both sides for 45° bends
   let x = START + 70;
   list.forEach((s, i) => {
-    if (i) x += SPACING + (s.reach ? s.reach + FLAT : 0) + (list[i - 1].reach ? list[i - 1].reach + FLAT : 0) * 0.5;
+    if (i) {
+      const prev = list[i - 1];
+      x += !s.reach && !prev.reach ? TIGHT : SPACING + (s.reach ? s.reach + FLAT : 0) + (prev.reach ? prev.reach + FLAT : 0) * 0.5;
+    }
     s.x = x;
   });
   const hubX = (list.length ? x : START + 70) + SPACING * 1.3 + LANE_GAP * 1.5;
@@ -86,7 +90,9 @@ export function buildNetwork(stations, lines) {
     return { id: line.id, color: line.color, d: toPath(pts) };
   });
 
-  // labels: lanes 1–2 label above, 3–4 below; alternate tiers when neighbours would overlap
+  // labels: lanes 1–2 label above, 3–4 below, on one of two tiers. A label with no free tier becomes
+  // "minor": hidden until the station is hovered or focused (and always in its card). Interchanges,
+  // projects and recordings always keep a visible label.
   const lastEnd = {};
   const out = list.map((s) => {
     const inter = s.lines.length > 1;
@@ -96,8 +102,14 @@ export function buildNetwork(stations, lines) {
     const key = s.lines[0] + (above ? "^" : "v");
     const text = s.short || s.title;
     const w = inter ? textWidth(text, 10) : textWidth(text, 7.6);
-    const tier = lastEnd[key] != null && s.x - w / 2 < lastEnd[key].end + 10 ? 1 - lastEnd[key].tier : 0;
-    lastEnd[key] = { end: s.x + w / 2, tier };
+    const tiers = lastEnd[key] || (lastEnd[key] = [-Infinity, -Infinity]);
+    let tier = tiers.findIndex((end) => s.x - w / 2 >= end + 10);
+    let minor = false;
+    if (tier < 0) {
+      if (inter || s.kind === "project" || s.kind === "sound") tier = tiers[0] <= tiers[1] ? 0 : 1;
+      else { minor = true; tier = 0; }
+    }
+    if (!minor) tiers[tier] = s.x + w / 2;
     const maxY = Math.max(...Object.values(s.ys));
     const label = above
       ? { x: s.x, y: r(anchorY - (inter ? 24 : 18) - tier * 20) }
@@ -111,6 +123,11 @@ export function buildNetwork(stations, lines) {
       draft: !!s.draft,
       lines: s.lines,
       interchange: inter,
+      minor,
+      year: new Date(s.date).getUTCFullYear(),
+      date: s.date instanceof Date ? s.date.toISOString().slice(0, 10) : String(s.date).slice(0, 10),
+      meta: s.meta || "",
+      summary: String(s.summary || "").replace(/\s+/g, " ").slice(0, 140),
       x: r(s.x),
       y: r(anchorY),
       pill: inter ? { x: r(s.x - 12), y: r(anchorY - 12), w: 24, h: r(maxY - anchorY + 24) } : null,

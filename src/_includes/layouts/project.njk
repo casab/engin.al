@@ -3,15 +3,13 @@ layout: layouts/base.njk
 ---
 {%- import "macros.njk" as m -%}
 {%- set main = line | lineInfo(site.lines) -%}
-{%- set sameLine = collections.projects | onLine(line) -%}
-{%- set newer = sameLine | getPreviousCollectionItem(page) -%}
-{%- set older = sameLine | getNextCollectionItem(page) -%}
 <article class="c-{{ line }}">
   <header class="wrap lp-head split split--8-4">
     <div>
       <div class="lp-head__top">
         <a class="tag" href="{{ main.url }}"><span class="bar" aria-hidden="true"></span>← {{ main.code }} {{ main.label }}</a>
         {%- if draft %}<span class="draft">draft, not on the live site</span>{% endif %}
+        <button class="share" type="button" data-share hidden>Share</button>
       </div>
       <h1 class="display">{{ title }}</h1>
       {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
@@ -40,8 +38,5 @@ layout: layouts/base.njk
     </div>
   </div>
 
-  <nav class="wrap pager" aria-label="More on the {{ main.label }} line">
-    {%- if newer %}<a href="{{ newer.url }}"><span class="mono muted">← newer</span><span class="display">{{ newer.data.title }}</span></a>{% else %}<span></span>{% endif %}
-    {%- if older %}<a class="next" href="{{ older.url }}"><span class="mono muted">older →</span><span class="display">{{ older.data.title }}</span></a>{% endif %}
-  </nav>
+  {{ m.nextStops(collections.stations | nextStops(page.url, lines, site.lines)) }}
 </article>

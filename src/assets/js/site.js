@@ -86,3 +86,61 @@ if (yearLinks.length) {
 if (matchMedia("(max-width: 59.99rem)").matches) {
   document.querySelectorAll("[data-panel]").forEach((d) => { d.open = false; });
 }
+
+// ---- the network map: pan, year jumps, keyboard, station cards (only where a map is drawn) ----
+const network = document.querySelector(".network");
+if (network && network.querySelector(".map svg")) {
+  import("./map.js").then((m) => m.initMap(network)).catch(() => {});
+}
+
+// ---- search: the header button, Ctrl/Cmd+K and / open a dialog (search.js loads on first use) ----
+let searchModule = null;
+const loadSearch = () => (searchModule ||= import("./search.js"));
+const openSearch = () => loadSearch().then((m) => m.openDialog()).catch(() => { location.href = "/search/"; });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-search-open]");
+  if (!a || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  if (menu) menu.open = false;
+  openSearch();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.defaultPrevented || e.altKey) return;
+  const typing = e.target.closest && e.target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true']");
+  if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSearch(); }
+  else if (e.key === "/" && !typing && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openSearch(); }
+});
+const searchKey = document.querySelector("[data-search-key]");
+if (searchKey) {
+  const mac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform || navigator.platform || "");
+  searchKey.textContent = mac ? "⌘ K" : "Ctrl K";
+  searchKey.hidden = false;
+}
+const searchPage = document.querySelector("[data-search-page]");
+if (searchPage) loadSearch().then((m) => m.mountPage(searchPage)).catch(() => {});
+
+// ---- share buttons on station pages: the share sheet where there is one, else copy the link ----
+const toast = (text) => {
+  let t = document.querySelector(".toast");
+  if (!t) { t = document.createElement("p"); t.className = "toast"; t.setAttribute("role", "status"); document.body.append(t); }
+  t.textContent = text;
+  t.classList.add("is-on");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("is-on"), 2200);
+};
+// phones get the system share sheet; desktops (where it's a clunky OS dialog) copy the link
+const useShareSheet = !!navigator.share && matchMedia("(pointer: coarse)").matches;
+document.querySelectorAll("[data-share]").forEach((b) => {
+  if (!useShareSheet && !navigator.clipboard) return;
+  b.textContent = useShareSheet ? "Share" : "Copy link";
+  b.hidden = false;
+  b.addEventListener("click", async () => {
+    const url = document.querySelector('link[rel="canonical"]')?.href || location.href;
+    const title = document.title;
+    if (useShareSheet) {
+      try { await navigator.share({ title, url }); } catch { /* closed the sheet */ }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); toast("Link copied"); } catch { toast(url); }
+  });
+});

@@ -1,0 +1,49 @@
+---
+layout: layouts/base.njk
+permalink: /search/
+title: Search
+description: Every station on the network, A to Z by line.
+---
+<div class="wrap">
+  <header class="page-head">
+    <p class="label">Search</p>
+    <h1 class="display">Find a station</h1>
+    <p class="lede">Projects, recordings, milestones, runs and notes. Search by name, year, stack or venue.</p>
+  </header>
+
+  {#- search.js turns this into a live search; without JS the A–Z list below is the index #}
+  <div class="search-page" data-search-page hidden></div>
+
+  <div class="search-az" data-search-az>
+    {%- for l in site.lines %}
+    {%- set items = collections.stations | lineStations(l.id, site.lines) | byTitle %}
+    {%- if items.length %}
+    <section class="search-az__line c-{{ l.id }}" aria-labelledby="az-{{ l.id }}">
+      <h2 class="search-az__head" id="az-{{ l.id }}"><span class="bar" aria-hidden="true"></span>{{ l.code }} {{ l.label }} <span class="mono muted">{{ items.length }}</span></h2>
+      <ol class="tracks">
+        {%- for s in items %}
+        <li class="track">
+          <span class="track__n">{{ s.date | date("year") }}</span>
+          <span class="track__t">{% if s.url %}<a href="{{ s.url }}">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</span>
+          {%- if s.meta %}<span class="track__m">{{ s.meta }}</span>{% endif %}
+        </li>
+        {%- endfor %}
+      </ol>
+    </section>
+    {%- endif %}
+    {%- endfor %}
+    {%- if collections.notes.length %}
+    <section class="search-az__line" aria-labelledby="az-notes">
+      <h2 class="search-az__head" id="az-notes">Notes <span class="mono muted">{{ collections.notes.length }}</span></h2>
+      <ol class="tracks">
+        {%- for n in collections.notes %}
+        <li class="track">
+          <span class="track__n">{{ n.data.date | date("year") }}</span>
+          <span class="track__t"><a href="{{ n.url }}">{{ n.data.title }}</a></span>
+        </li>
+        {%- endfor %}
+      </ol>
+    </section>
+    {%- endif %}
+  </div>
+</div>

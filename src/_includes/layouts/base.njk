@@ -1,6 +1,7 @@
 {%- set pageTitle = (title + " · " + site.title) if title and page.url != "/" else (site.title + ": " + site.tagline) -%}
 {%- set pageDesc = (description or summary or site.description) | stripHtml -%}
-{%- set ogImage = (cover | bundle(page.inputPath) | mediaOg) if cover else site.og_image -%}
+{#- share card drawn after the build by scripts/og.mjs (every page gets one) -#}
+{%- set ogImage = page.url | ogCard({ title: title, summary: summary, description: description, lines: lines, thisLine: thisLine, yr: yr, date: date, stack: stack, artist: artist, kind: kind }, site) -%}
 <!doctype html>
 <html lang="en">
 <head>
@@ -20,6 +21,9 @@
   <meta property="og:description" content="{{ pageDesc }}">
   <meta property="og:url" content="{{ page.url | absoluteUrl(site.url) }}">
   <meta property="og:image" content="{{ ogImage | absoluteUrl(site.url) }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ (title or site.tagline) | stripHtml }}: a card from engin.al">
   <meta name="twitter:card" content="summary_large_image">
   <script type="module" src="/assets/js/site.js"></script>
 </head>
@@ -38,6 +42,11 @@
           {%- endfor %}
         </ul>
       </nav>
+      {#- Search: a link to /search/ without JS; site.js opens the search dialog instead (also Ctrl/Cmd+K and /) #}
+      <a class="search-btn" href="/search/" data-search-open aria-keyshortcuts="Control+K Meta+K /"{% if page.url == "/search/" %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="6.5" cy="6.5" r="4.75" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 10l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
+        <span>Search</span><kbd class="search-btn__key" data-search-key hidden>Ctrl K</kbd>
+      </a>
       {#- Phones: the same menu as a full-screen sheet. <details> keeps it working without JS. #}
       <details class="menu" data-menu>
         <summary class="menu__btn"><span class="menu__open">Menu</span><span class="menu__close">Close</span></summary>
@@ -52,6 +61,8 @@
             <li><a href="{{ item.url }}"{% if page.url and page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
             {%- endif %}{% endfor %}
             <li><a href="/">The map</a></li>
+            <li><a href="/years/"{% if page.url and page.url.startsWith("/years/") %} aria-current="page"{% endif %}>Year by year</a></li>
+            <li><a href="/search/" data-search-open>Search</a></li>
           </ul>
         </nav>
       </details>
@@ -66,6 +77,8 @@
     <div class="wrap mono muted">
       <p>Map drawn at build time from the content · Eleventy · No tracking</p>
       <ul class="footer-links">
+        <li><a href="/years/">Year by year</a></li>
+        <li><a href="/search/">Search</a></li>
         <li><a href="/feed.xml">Feed</a></li>
         <li><a href="https://github.com/casab/engin.al" rel="noopener noreferrer">Source</a></li>
         {%- for s in site.socials %}<li><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a></li>{% endfor %}

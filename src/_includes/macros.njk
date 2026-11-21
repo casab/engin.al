@@ -29,10 +29,13 @@
 {%- endmacro -%}
 
 {#- The network map (desktop) and the same stations as a vertical diagram (phones), with a line filter -#}
-{%- macro network(stations, lines) -%}
+{#- end: the terminus, { label, url, note } (default: Now). timeline: false hides the year jumps (one-year maps). #}
+{%- macro network(stations, lines, end = null, timeline = true, heading = "The network") -%}
 {%- set net = stations | network(lines) -%}
+{%- set endLabel = end.label if end else "Now" -%}
+{%- set endUrl = end.url if end else "/now/" -%}
 <section class="network wrap" aria-labelledby="network-title">
-  <h2 class="sr-only" id="network-title">The network</h2>
+  <h2 class="sr-only" id="network-title">{{ heading }}</h2>
   <fieldset class="filter">
     <legend class="sr-only">Show one line</legend>
     <input type="radio" name="line" id="f-all" value="all" checked><label for="f-all"><span class="bar" aria-hidden="true"></span>All lines</label>
@@ -42,33 +45,47 @@
     <span class="filter__hint mono muted">time runs left to right · {{ net.stations.length }} stations</span>
   </fieldset>
 
+  {#- Year jumps for the map: shown by map.js (they scroll the map), hidden without JS #}
+  {%- if timeline and net.years.length > 1 %}
+  <div class="timeline" data-timeline hidden>
+    <span class="label">Jump to</span>
+    <ol>
+      {%- for y in net.years %}<li><button type="button" data-map-year="{{ y.label }}">{{ y.label }}</button></li>{% endfor %}
+      <li><button type="button" data-map-year="now">Now</button></li>
+    </ol>
+    <a class="timeline__all" href="/years/">Year by year →</a>
+  </div>
+  {%- endif %}
+
   <div class="map{% if net.width > 1400 %} is-wide{% endif %}">
     <svg viewBox="0 0 {{ net.width }} {{ net.height }}" width="{{ net.width }}" height="{{ net.height }}" role="img" aria-labelledby="map-desc">
-      <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on four lines: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
+      <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on {{ lines.length }} line{% if lines.length != 1 %}s{% endif %}: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
       <path class="axis" d="M0 {{ net.axisY }}H{{ net.width }}"/>
       {%- for y in net.years %}<text class="year" x="{{ y.x }}" y="{{ net.axisY + 20 }}" text-anchor="middle">{{ y.label }}</text>{% endfor %}
       {%- for p in net.paths %}
       <g class="ln c-{{ p.id }}"><path pathLength="1" d="{{ p.d }}"/></g>
       {%- endfor %}
       {%- for s in net.stations %}
-      <g class="st{% if s.interchange %} st--x{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
-        {%- if s.url %}<a href="{{ s.url }}">{% endif %}
-        {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/>{% endif %}
+      <g class="st{% if s.interchange %} st--x{% endif %}{% if s.minor %} st--minor{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}" data-st="{{ loop.index0 }}" data-year="{{ s.year }}">
+        {%- if s.url %}<a href="{{ s.url }}" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% else %}<g class="st__plain" role="img" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% endif %}
+        {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/><circle class="hit" cx="{{ s.x }}" cy="{{ s.y }}" r="18"/>{% endif %}
         <text x="{{ s.label.x }}" y="{{ s.label.y }}" text-anchor="middle">{{ s.text }}</text>
-        {%- if s.url %}</a>{% endif %}
+        {%- if s.url %}</a>{% else %}</g>{% endif %}
       </g>
       {%- endfor %}
-      <g class="hub">
+      {%- if end %}<a class="hub" href="{{ endUrl }}" aria-label="{{ end.note or endLabel }}">{% else %}<g class="hub">{% endif %}
         <rect x="{{ net.hub.x }}" y="{{ net.hub.y }}" width="{{ net.hub.w }}" height="{{ net.hub.h }}" rx="17"/>
-        <text x="{{ net.hub.labelX }}" y="{{ net.hub.labelY }}">NOW</text>
-      </g>
+        <text x="{{ net.hub.labelX }}" y="{{ net.hub.labelY }}">{{ endLabel | upper }}</text>
+      {%- if end %}</a>{% else %}</g>{% endif %}
     </svg>
   </div>
+  <div class="map-card" data-map-card hidden></div>
+  <script type="application/json" data-map-data>{{ net.stations | mapCards(lines) | json | safe }}</script>
 
   <ol class="diagram" aria-label="Stations, newest first">
     <li class="diagram__row diagram__row--now{% for l in lines %} on-{{ l.id }}{% endfor %}">
       {%- for l in lines %}<span class="diagram__cell c-{{ l.id }}" aria-hidden="true"><span class="diagram__dot"></span></span>{% endfor %}
-      <span class="diagram__text"><a class="diagram__title" href="/now/">Now</a><span class="mono muted">all lines</span></span>
+      <span class="diagram__text"><a class="diagram__title" href="{{ endUrl }}">{{ endLabel }}</a><span class="mono muted">{{ end.note if end and end.note else "all lines" }}</span></span>
     </li>
     {%- for s in stations %}
     <li class="diagram__row{% if loop.index > 12 %} is-more{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
@@ -106,4 +123,29 @@
     {%- endfor %}
   </div>
 </section>
+{%- endmacro -%}
+
+{#- Station pages: one strip per line the entry is on, with the stations either side of it on that line. -#}
+{%- macro nextStops(stops) -%}
+{%- if stops.length %}
+<nav class="wrap next-stops" aria-label="Next stops">
+  <h2 class="label">Next stops</h2>
+  {%- for st in stops %}
+  <section class="stopnav c-{{ st.line.id }}" aria-label="{{ st.line.label }} line">
+    <a class="stopnav__line" href="{{ st.line.url }}"><span class="badge" aria-hidden="true">{{ st.line.code }}</span><span><span class="stopnav__name">{{ st.line.label }}</span> <span class="mono muted">station {{ st.n }} of {{ st.total }}</span></span></a>
+    <div class="stopnav__rail">
+      {%- for dir in ["older", "newer"] %}{% set s = st[dir] %}
+      {%- if s %}
+      {%- set label %}<span class="mono muted">{% if dir == "older" %}← older · {% endif %}{{ s.date | date("month") }}{% if dir == "newer" %} · newer →{% endif %}</span><span class="stopnav__t">{{ s.title }}</span>{% endset %}
+      {%- if s.url %}<a class="stopnav__stop stopnav__stop--{{ dir }}" href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ label | safe }}</a>
+      {%- else %}<span class="stopnav__stop stopnav__stop--{{ dir }}">{{ label | safe }}</span>{% endif %}
+      {%- else %}
+      <span class="stopnav__stop stopnav__stop--{{ dir }} stopnav__stop--end"><span class="mono muted">{% if dir == "older" %}first station on the line{% else %}newest station on the line{% endif %}</span></span>
+      {%- endif %}
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endfor %}
+</nav>
+{%- endif %}
 {%- endmacro -%}

@@ -2,6 +2,7 @@
 //  - every internal href/src resolves to a file
 //  - every <img> has an alt attribute
 //  - no inline <script> code or style="" attributes (they would break the strict CSP)
+//  - every page has a share card in _site/og/ (scripts/og.mjs)
 //  - no demo Strava data in CI (CI env var or --ci, used by the Cloudflare build)
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -45,6 +46,10 @@ for await (const file of walk(ROOT)) {
       if (url.startsWith("/") && !(await resolves(url))) errors.push(`${rel}: broken srcset ${url}`);
     }
   }
+  // every page's share card (og:image, drawn by scripts/og.mjs) must exist
+  const og = html.match(/<meta property="og:image" content="https:\/\/engin\.al(\/og\/[^"]+)"/);
+  if (!og) errors.push(`${rel}: no share card (og:image)`);
+  else if (!(await exists(path.join(ROOT, og[1])))) errors.push(`${rel}: share card ${og[1]} was not drawn`);
   for (const m of html.matchAll(/<img\b[^>]*>/g)) if (!/\balt=/.test(m[0])) errors.push(`${rel}: <img> without alt`);
   if (/\sstyle="/.test(html)) errors.push(`${rel}: inline style attribute (blocked by CSP)`);
   for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {

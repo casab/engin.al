@@ -9,6 +9,7 @@ layout: layouts/base.njk
       <div class="lp-head__top">
         <a class="tag" href="{{ main.url }}"><span class="bar" aria-hidden="true"></span>← {{ main.code }} {{ main.label }}</a>
         {%- if draft %}<span class="draft">draft, not on the live site</span>{% endif %}
+        <button class="share" type="button" data-share hidden>Share</button>
       </div>
       <h1 class="display">{{ title }}</h1>
       {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
@@ -34,4 +35,5 @@ layout: layouts/base.njk
       <div class="prose">{{ content | safe }}</div>
     </div>
   </div>
+  {{ m.nextStops(collections.stations | nextStops(page.url, lines, site.lines)) }}
 </article>
