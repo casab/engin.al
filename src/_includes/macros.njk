@@ -124,3 +124,28 @@
   </div>
 </section>
 {%- endmacro -%}
+
+{#- Station pages: one strip per line the entry is on, with the stations either side of it on that line. -#}
+{%- macro nextStops(stops) -%}
+{%- if stops.length %}
+<nav class="wrap next-stops" aria-label="Next stops">
+  <h2 class="label">Next stops</h2>
+  {%- for st in stops %}
+  <section class="stopnav c-{{ st.line.id }}" aria-label="{{ st.line.label }} line">
+    <a class="stopnav__line" href="{{ st.line.url }}"><span class="badge" aria-hidden="true">{{ st.line.code }}</span><span><span class="stopnav__name">{{ st.line.label }}</span> <span class="mono muted">station {{ st.n }} of {{ st.total }}</span></span></a>
+    <div class="stopnav__rail">
+      {%- for dir in ["older", "newer"] %}{% set s = st[dir] %}
+      {%- if s %}
+      {%- set label %}<span class="mono muted">{% if dir == "older" %}← older · {% endif %}{{ s.date | date("month") }}{% if dir == "newer" %} · newer →{% endif %}</span><span class="stopnav__t">{{ s.title }}</span>{% endset %}
+      {%- if s.url %}<a class="stopnav__stop stopnav__stop--{{ dir }}" href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ label | safe }}</a>
+      {%- else %}<span class="stopnav__stop stopnav__stop--{{ dir }}">{{ label | safe }}</span>{% endif %}
+      {%- else %}
+      <span class="stopnav__stop stopnav__stop--{{ dir }} stopnav__stop--end"><span class="mono muted">{% if dir == "older" %}first station on the line{% else %}newest station on the line{% endif %}</span></span>
+      {%- endif %}
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endfor %}
+</nav>
+{%- endif %}
+{%- endmacro -%}

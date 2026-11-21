@@ -118,3 +118,29 @@ if (searchKey) {
 }
 const searchPage = document.querySelector("[data-search-page]");
 if (searchPage) loadSearch().then((m) => m.mountPage(searchPage)).catch(() => {});
+
+// ---- share buttons on station pages: the share sheet where there is one, else copy the link ----
+const toast = (text) => {
+  let t = document.querySelector(".toast");
+  if (!t) { t = document.createElement("p"); t.className = "toast"; t.setAttribute("role", "status"); document.body.append(t); }
+  t.textContent = text;
+  t.classList.add("is-on");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("is-on"), 2200);
+};
+// phones get the system share sheet; desktops (where it's a clunky OS dialog) copy the link
+const useShareSheet = !!navigator.share && matchMedia("(pointer: coarse)").matches;
+document.querySelectorAll("[data-share]").forEach((b) => {
+  if (!useShareSheet && !navigator.clipboard) return;
+  b.textContent = useShareSheet ? "Share" : "Copy link";
+  b.hidden = false;
+  b.addEventListener("click", async () => {
+    const url = document.querySelector('link[rel="canonical"]')?.href || location.href;
+    const title = document.title;
+    if (useShareSheet) {
+      try { await navigator.share({ title, url }); } catch { /* closed the sheet */ }
+      return;
+    }
+    try { await navigator.clipboard.writeText(url); toast("Link copied"); } catch { toast(url); }
+  });
+});
