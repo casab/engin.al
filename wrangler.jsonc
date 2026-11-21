@@ -1,20 +1,36 @@
-// Cloudflare Workers config for engin.al: an assets-only Worker serving the Eleventy build.
-// Connect the GitHub repo in the Cloudflare dashboard (Workers & Pages → Create → Import a repository):
+// Cloudflare Worker for engin.al (pattern from technoetkinlik / uncvl.xyz).
+// Built and deployed by Cloudflare Workers Builds from github.com/casab/engin.al:
 //   Build command:  npm run build:deploy
 //   Deploy command: npx wrangler deploy
-//   Non-production branch deploy command: npx wrangler versions upload   (preview URL per PR)
-// _headers and _redirects inside _site/ are applied by Workers static assets.
+//   Preview command: npx wrangler preview   (one preview per branch)
+//
+// - The built site (_site) is served as static assets; asset requests never run Worker code.
+//   _headers and _redirects inside _site/ are applied by Workers static assets.
+// - Only /api/* runs worker/index.js: GitHub sign-in for Sveltia CMS (/api/auth, /api/auth/callback).
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "engin-al",
-  "compatibility_date": "2026-11-21",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./_site",
+    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
   },
+  // GitHub OAuth app for the CMS sign-in: callback https://engin.al/api/auth/callback.
+  // GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET live on the Worker as secrets (dashboard → engin-al →
+  // Settings → Variables and secrets, type "Secret"), so deploys never overwrite them. The Client ID is
+  // public: it may move here as "vars": { "GITHUB_CLIENT_ID": "…" } like technoetkinlik's, but then delete
+  // the dashboard copy, or this file wins on every deploy.
+  // The custom domain engin.al is attached in the Cloudflare dashboard, deliberately not via "routes":
+  // without them wrangler never touches domains.
   "workers_dev": true,
-  "preview_urls": true
-  // Once engin.al's DNS is on Cloudflare (it points at GitHub Pages today), attach the domain:
-  // "routes": [{ "pattern": "engin.al", "custom_domain": true }]
+  "preview_urls": true,
+  // Invocation logs stay off: the sign-in callback carries a GitHub code and the result page a token.
+  "observability": {
+    "logs": { "enabled": true, "invocation_logs": false },
+    "traces": { "enabled": false }
+  }
 }

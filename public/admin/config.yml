@@ -1,17 +1,19 @@
-# Sveltia CMS configuration: editing UI at https://engin.al/admin/
-# Docs: https://sveltiacms.app/en/docs
+# Sveltia CMS configuration: editing UI at https://engin.al/admin/ (docs: https://sveltiacms.app/en/docs)
+# Pattern from technoetkinlik / uncvl.
 #
-# Sign-in: until the OAuth helper exists, choose "Sign in with Token" and paste a GitHub
-# fine-grained personal access token with Contents: read & write on casab/engin.al.
-# For one-click "Sign in with GitHub", deploy the Sveltia CMS Authenticator Worker
-# (https://github.com/sveltia/sveltia-cms-auth) and set `base_url` below to its URL.
+# Sign-in: "Sign in with GitHub" through the site Worker (/api/auth, worker/index.js). One-time setup:
+#   a GitHub OAuth app "engin.al CMS" (github.com/settings/developers), callback https://engin.al/api/auth/callback.
+#   Its Client ID and secret go on the Worker as the secrets GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.
+# "Sign in with Token" (a fine-grained token with Contents: read & write on casab/engin.al) works without it.
 # Locally (Chromium): open http://localhost:8080/admin/ and pick "Work with Local Repository".
 
 backend:
   name: github
   repo: casab/engin.al
   branch: main
-  # base_url: https://sveltia-cms-auth.<your-subdomain>.workers.dev
+  base_url: https://engin.al
+  auth_endpoint: api/auth
+  auth_scope: public_repo   # the repo is public; this is enough to commit
   commit_messages:
     create: "content: add {{collection}} “{{slug}}”"
     update: "content: update {{collection}} “{{slug}}”"
@@ -21,7 +23,8 @@ backend:
 
 site_url: https://engin.al
 display_url: https://engin.al
-logo_url: /favicon.svg
+logo:
+  src: /favicon.svg
 
 # Site-wide images (e.g. the about photo). Collections below keep images next to their entry instead.
 media_folder: src/assets/img
