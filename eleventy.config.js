@@ -202,6 +202,14 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("onLine", (items, id) => (items || []).filter((i) => ((i.data ? i.data.lines : i.lines) || []).includes(id)));
   eleventyConfig.addFilter("interchanges", (stations) => (stations || []).filter((s) => (s.lines || []).length > 1));
   eleventyConfig.addFilter("first", (arr) => (arr || [])[0]);
+  // compact station data for the map's hover/tap cards (index = data-st on the station)
+  eleventyConfig.addFilter("mapCards", (stations, lines) => {
+    const code = Object.fromEntries((lines || []).map((l) => [l.id, [l.code, l.label]]));
+    const month = (d) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, month: "short", year: "numeric" }).format(toDate(d));
+    // the card already shows month + year, so a bare year in meta (a project's status) would repeat it
+    const meta = (s) => (s.meta || "").split(" · ").filter((p) => p !== String(toDate(s.date).getUTCFullYear())).join(" · ");
+    return (stations || []).map((s) => ({ t: s.title, d: month(s.date), m: meta(s), s: s.summary, u: s.url, l: s.lines.map((id) => [id, ...(code[id] || [id, id])]) }));
+  });
   // [[year, stations], …], newest year first (input is already newest first)
   eleventyConfig.addFilter("byYear", (stations) => {
     const groups = new Map();

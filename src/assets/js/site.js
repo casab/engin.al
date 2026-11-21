@@ -86,3 +86,9 @@ if (yearLinks.length) {
 if (matchMedia("(max-width: 59.99rem)").matches) {
   document.querySelectorAll("[data-panel]").forEach((d) => { d.open = false; });
 }
+
+// ---- the network map: pan, year jumps, keyboard, station cards (only where a map is drawn) ----
+const network = document.querySelector(".network");
+if (network && network.querySelector(".map svg")) {
+  import("./map.js").then((m) => m.initMap(network)).catch(() => {});
+}
