@@ -1,4 +1,5 @@
 // Post-build sanity checks on _site (no dependencies):
+//  - url() and import() references inside /assets/ resolve; with --ci, /assets/ files carry a content hash
 //  - every internal href/src resolves to a file
 //  - every <img> has an alt attribute
 //  - no inline <script> code or style="" attributes (they would break the strict CSP)
@@ -55,6 +56,19 @@ for await (const file of walk(ROOT)) {
   for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
     const [, attrs, body] = m;
     if (body.trim() && !/type="application\/(ld\+)?json"/.test(attrs)) errors.push(`${rel}: inline <script> (blocked by CSP)`);
+  }
+}
+
+// references inside the stylesheets and scripts (fonts, lazily imported modules) must resolve too, and with
+// --ci every /assets/ file must carry its content hash (scripts/hash-assets.mjs)
+for await (const file of walk(path.join(ROOT, "assets"))) {
+  const rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
+  if (process.argv.includes("--ci") && /\.(css|js|woff2)$/.test(file) && !/\.[0-9a-f]{10}\.\w+$/.test(file)) errors.push(`${rel}: no content hash in the file name`);
+  if (!/\.(css|js)$/.test(file)) continue;
+  const text = await readFile(file, "utf8");
+  for (const m of text.matchAll(/url\((\/[^)"']+)\)/g)) if (!(await resolves(m[1]))) errors.push(`${rel}: broken url(${m[1]})`);
+  for (const m of text.matchAll(/(?:import\(|from\s+)["'](\.\/[^"']+)["']/g)) {
+    if (!(await resolves(path.posix.join(path.posix.dirname(rel), m[1])))) errors.push(`${rel}: broken import ${m[1]}`);
   }
 }
 

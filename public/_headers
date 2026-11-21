@@ -20,7 +20,7 @@
 
 /img/*
   Cache-Control: public, max-age=31536000, immutable
-/assets/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
+# CSS, JS and fonts carry a content hash in their names (scripts/hash-assets.mjs): a new version is a new URL.
+# One rule on purpose: when several rules match, their values for the same header are joined, not replaced.
 /assets/*
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, max-age=31536000, immutable

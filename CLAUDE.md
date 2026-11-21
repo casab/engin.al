@@ -45,12 +45,13 @@ interchange. Live at https://engin.al. Repo: github.com/casab/engin.al (public).
 
 ```sh
 npm run serve          # dev server :8080, shows drafts (marked)
-npm run build:deploy   # clean build + scripts/check.mjs --ci (what Workers Builds runs)
+npm run build:deploy   # clean build (hashes asset names) + scripts/check.mjs --ci (what Workers Builds runs)
 npm run check          # links, alt text, no inline style/script (CSP), no demo Strava data in CI
 npm run strava:sync    # pull Strava → src/_data/strava (needs .env), then commit the result
 npm run strava:demo    # fake races for layout work; `node scripts/strava-demo.mjs --clear` before committing
 npm run r2:media       # upload images to R2 with your wrangler login (no keys); `-- --prune` to drop local copies
 npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
+npx wrangler dev --port 8787     # serve the production _site with _headers (launch.json "production build")
 ```
 
 ## Layout
@@ -78,7 +79,7 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/pages/years.njk`, `year.njk` | `/years/` and `/years/<yyyy>/`, paginated over the `stationYears` collection |
 | `src/pages/search.njk`, `search-index.njk` | `/search/` (A–Z by line, the no-JS fallback) and `/search.json` (`searchIndex` filter) |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
-| `scripts/` | `check.mjs`, `og.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
+| `scripts/` | `check.mjs`, `og.mjs`, `hash-assets.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
 | `scripts/og.mjs`, `scripts/og-fonts/` | share cards (see below); static Archivo cuts made by `scripts/og-fonts.py` |
 | `src/pages/sitemap.njk` | `/sitemap.xml` (`sitemapUrls` filter adds the paginated line and year pages) |
 
@@ -231,6 +232,22 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   `da3fd5a67c872a4ddbbafcf6636d92ff`); it was off as of 2026-11-21, Engin to switch on.
 - `/admin/*` headers: COOP `unsafe-none` (the sign-in popup), CSP allows `data:`/`blob:`, api.github.com,
   githubstatus.com.
+
+## Asset hashes and caching
+
+- After a production build (`runMode === "build"` in the `eleventy.after` hook, after the share cards),
+  `scripts/hash-assets.mjs` renames every CSS, JS and font file under `_site/assets/` to `name.<10 hex>.ext` and
+  rewrites the references: absolute `/assets/...` paths in pages, feeds and CSS, and `./name.js` imports between
+  scripts. Files are hashed after what they point at, so `site.js` gets a new name when `map.js` changes.
+  `npm run serve` skips it (the dev server serves `src/` unhashed).
+- So in source, always reference assets as `/assets/<dir>/<file>` (or `./file.js` between scripts); anything
+  built differently (string concatenation) won't be rewritten. `check.mjs` checks `url()` and `import()` targets
+  and, with `--ci`, fails on an unhashed CSS/JS/font file.
+- `_headers`: `/assets/*` is cached for a year, `immutable`. Pages keep the default `max-age=0, must-revalidate`.
+  Keep **one** rule per path: when several `_headers` rules match, their values for the same header are joined
+  (live fonts once got `max-age=3600, must-revalidate, public, max-age=31536000, immutable`).
+- A tab left open across a deploy asks for old hashed names that no longer exist: a failed `import("./search…")`
+  falls back to `/search/`, and a failed map import leaves the plain map.
 
 ## Gotchas
 
