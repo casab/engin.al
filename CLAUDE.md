@@ -338,8 +338,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Open items
 
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
-- Still drafts: `[Started playing guitar]` (Sound line; the 2012 date is a placeholder, and Engin said no band
-  names for now) and one SoundCloud track Engin hasn't decided on. The first half marathon is the 9 Eylül İzmir
+- Still a draft: one SoundCloud track Engin hasn't decided on. "Started playing guitar" is December 2009 (Engin;
+  no band names for now), the first station on the Sound line. The first half marathon is the 9 Eylül İzmir
   Half Marathon 2018 (Engin, 2026-11-21): a note on its Strava station (`src/distance/1813356268.md`), not a
   separate milestone.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
