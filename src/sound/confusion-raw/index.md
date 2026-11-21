@@ -1,6 +1,7 @@
 ---
 title: "Confusion Raw"
 date: 2019-11-03
+artist: "Senst"
 kind: "track"
 length: "4:38"
 summary: "The first, rougher take on what became Confusion."

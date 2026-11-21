@@ -3,23 +3,23 @@
   "items": [
     {
       "kind": "guitar",
-      "name": "Electric guitar",
+      "name": "Yamaha Pacifica 611HFM",
       "note": "The first instrument, and still the one I reach for."
     },
     {
       "kind": "drums",
-      "name": "Yamaha DTX PRO kit",
+      "name": "Yamaha DTX6K3-X",
       "note": "Electronic kit into Addictive Drums 2. Learning, slowly."
     },
     {
       "kind": "keys",
-      "name": "Keyboard / MIDI controller",
+      "name": "M-Audio Keystation 61",
       "note": ""
     },
     {
       "kind": "synths",
       "name": "Hardware synthesizers",
-      "note": "For live sets: patched, sequenced and played in real time."
+      "note": "Novation Circuit Tracks, Novation Circuit Rhythm, Novation Mono Station, Arturia MicroFreak and Empress Audio ZOIA. For live sets: patched, sequenced and played in real time."
     },
     {
       "kind": "daw",
@@ -28,7 +28,7 @@
     },
     {
       "kind": "dj",
-      "name": "DJ setup",
+      "name": "Denon Prime Go",
       "note": ""
     }
   ]
