@@ -6,6 +6,7 @@ import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import { routeGeometry, weeklyTrace } from "./src/_lib/signal.js";
 import { buildNetwork, lineStations } from "./src/_lib/network.js";
 import { cardSpec, registerCard, renderCards } from "./scripts/og.mjs";
+import { hashAssets } from "./scripts/hash-assets.mjs";
 
 const TZ = "Europe/Istanbul";
 const SITE_URL = "https://engin.al/";
@@ -300,10 +301,16 @@ export default function (eleventyConfig) {
 
   // Share cards (scripts/og.mjs): base.njk asks for the page's card URL; every card is drawn after the build.
   eleventyConfig.addFilter("ogCard", (url, data, site) => registerCard(url, cardSpec(url, data || {}, site), site));
-  eleventyConfig.on("eleventy.after", async ({ directories }) => {
+  eleventyConfig.on("eleventy.after", async ({ directories, runMode }) => {
     const t = Date.now();
     const { total, drawn } = await renderCards(directories.output);
     console.log(`[og] ${total} share cards (${drawn} drawn, the rest cached) in ${Date.now() - t} ms`);
+    // content hashes in /assets/ file names (scripts/hash-assets.mjs); not while serving, where the dev server
+    // serves the unhashed files straight from src/
+    if (runMode === "build") {
+      const { assets, pages } = await hashAssets(directories.output);
+      console.log(`[hash] ${assets} assets renamed, ${pages} files updated`);
+    }
   });
   eleventyConfig.addWatchTarget("src/_data/media.json");
   const mediaKey = (src) => String(src || "").replace(/^\/+/, "");
