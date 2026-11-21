@@ -17,7 +17,8 @@
 //   src/_data/strava/routes/<id>.json  { latlng: [[lat,lng]...], alt: [m...] }  trimmed + simplified
 //
 // Which activities are shown: races, runs of at least STRAVA_RUN_MIN_KM, rides of at least STRAVA_RIDE_MIN_KM
-// (not virtual), plus anything with `show: true` in src/distance/<id>.md. `hidden: true` there removes one.
+// (not virtual), plus anything with `show: true` in src/distance/<id>.md. `hidden: true` there removes one;
+// `duplicate: true` also leaves it out of the weekly totals (a partial second recording of the same activity).
 // Everything else only feeds the weekly totals. Duplicate uploads (same sport and start minute) count once. The token uses the `activity:read` scope, so Strava itself
 // leaves out "Only you" activities and privacy-zone data; the trim and zones here are a second layer.
 
@@ -146,7 +147,7 @@ async function readOverrides() {
     const fm = (text.match(/^---\r?\n([\s\S]*?)\r?\n---/) || [])[1] || "";
     const get = (k) => (fm.match(new RegExp(`^${k}:\\s*(.+)$`, "m")) || [])[1]?.trim().replace(/^["']|["']$/g, "");
     const id = get("strava_id") || f.replace(/\.md$/, "");
-    out.set(String(id), { show: get("show") === "true", hidden: get("hidden") === "true" });
+    out.set(String(id), { show: get("show") === "true", hidden: get("hidden") === "true", duplicate: get("duplicate") === "true" });
   }
   return out;
 }
@@ -201,7 +202,9 @@ async function main() {
     uploaded.push(...batch);
     if (batch.length < 200) break;
   }
-  const all = dropDuplicates(uploaded);
+  // a partial recording of an activity that's on Strava in full (`duplicate: true` in src/distance/<id>.md)
+  // counts nowhere, not even in the weekly totals; `hidden: true` only keeps it off the map
+  const all = dropDuplicates(uploaded).filter((a) => !overrides.get(String(a.id))?.duplicate);
 
   const shown = all.filter((a) => {
     const sport = sportOf(a), o = overrides.get(String(a.id));
