@@ -19,6 +19,7 @@ layout: layouts/base.njk
       <dt>Date</dt><dd>{{ date | date("long") }}</dd>
       {%- if artist %}<dt>As</dt><dd>{{ artist }}</dd>{% endif %}
       <dt>Kind</dt><dd>{{ kind }}</dd>
+      {%- if tracklist_url and not embed_url %}<dt>Recording</dt><dd>none, only the tracklist</dd>{% endif %}
       {%- if length %}<dt>Length</dt><dd>{{ length }}</dd>{% endif %}
       {%- if venue %}<dt>Where</dt><dd>{{ venue }}</dd>{% endif %}
       {%- if gear and gear.length %}<dt>Gear</dt><dd>{{ gear | join(", ") }}</dd>{% endif %}
@@ -26,7 +27,13 @@ layout: layouts/base.njk
     </dl>
   </header>
   <div class="wrap lp-body">
-    {%- if embed_url %}<div class="lp-cover">{{ m.player({ url: embed_url, title: title, bandcamp_id: bandcamp_id } | player) }}</div>{% endif %}
+    {#- the recording first; a tracklist playlist as well, or instead when there's no recording -#}
+    {%- if embed_url or tracklist_url %}
+    <div class="lp-cover lp-players">
+      {%- if embed_url %}{{ m.player({ url: embed_url, title: title, bandcamp_id: bandcamp_id } | player, "recording") }}{% endif %}
+      {%- if tracklist_url %}{{ m.player({ url: tracklist_url, title: title } | player, "tracklist") }}{% endif %}
+    </div>
+    {%- endif %}
     {%- if cover %}
     <figure class="plate lp-cover">{% image cover | bundle(page.inputPath), cover_alt or "", "(min-width: 90rem) 90rem, 100vw" %}</figure>
     {%- endif %}

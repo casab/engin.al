@@ -59,7 +59,7 @@ npx wrangler dev --port 8787     # serve the production _site with _headers (lau
 | Path | What |
 |---|---|
 | `src/projects/<slug>/index.md` | project: `lines` (first sets the colour), `short` map label, `status`, `stack`, `summary`, `links`, `cover`, `featured`, `draft` |
-| `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url`, `links`; Sound line unless `lines` says otherwise |
+| `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url` (the recording), `tracklist_url` (playlist of the tracks played), `links`; Sound line unless `lines` says otherwise |
 | `src/stops/*.md` | milestones without a page (gigs without a recording, degree, jobs): `title`, `short`, `date`, `lines`, `artist` + `kind` (gigs: dj set, live set), `url`, `note`. `permalink: false` |
 | `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `photo`, body. Never pages |
 | `src/notes/*.md` | occasional write-ups; not on the map, not in the menu |
@@ -202,16 +202,22 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   `window.__sc_hydration` JSON has `kind` (track/playlist), the full title, description (tracklists) and a
   playlist's tracks with their uploaders. Engin's titles follow `Balgum - <event> - DD.MM.YYYY@(<venue>) {Set}`.
   Uncivilization Records (`uncvl`) uploads single-set tracks (`/uncvl/balgum-rehab2`, …) and one playlist per night.
-- **Gig vs recording (matching rule, 2026-11-21):** a gig is a recording page under `src/sound/` only when a
-  recording of *Engin's own set* exists, and `embed_url` is that single track. Otherwise it's a milestone in
-  `src/stops/` with `artist` and `kind`. Never embed a SoundCloud playlist: `/balgum/sets/…` is a tracklist of
-  other artists' tracks (the Nomads 36 one is), and `/uncvl/sets/…` is the whole night (Synth & Punk only holds
-  Ox's set). The night's playlist goes under `links` ("The whole night"). `check.mjs` fails on a `/sets/`
-  `embed_url` unless `kind: release`. Titles use the event's own name from uncvl (`title`, or `codename` when
-  the title is a lineup); `act_type` gives dj set / live set.
+- **Gig vs recording (matching rule, 2026-11-21):** a gig gets a page under `src/sound/` when there's a
+  recording of *Engin's own set* (`embed_url`, that single track) or a tracklist playlist of what he played
+  (`tracklist_url`, e.g. `/balgum/sets/…`). Both → both players, recording first. Neither → a milestone in
+  `src/stops/` with `artist` and `kind`. `/uncvl/sets/…` is the whole night, other people's sets (Synth & Punk
+  only holds Ox's): only ever a link ("The whole night"), never a player.
+- **Indicators** (Engin asked for them): the `player` macro takes `as` = `"recording"` or `"tracklist"`. A tag
+  above the title says "Recording" or "Tracklist · not a recording"; a tracklist also has dashed rules and an
+  outlined ≡ instead of ▶. A tracklist-only entry gets "tracklist only" in its meta (line page, map card,
+  search) and "Recording: none, only the tracklist" on its page. The line page shows one player per row (the
+  recording, else the tracklist).
+- `check.mjs` fails on a `/sets/` `embed_url` (unless `kind: release`) and on a non-draft `src/sound/` entry
+  with neither field. Titles use the event's own name from uncvl (`title`, or `codename` when the title is a
+  lineup); `act_type` gives dj set / live set.
 - **Balgum and Senst** are both producer and DJ names, split by genre (Engin, 2026-11-21): **Balgum** for
   techno, drum and bass, hardcore and the like (Death, Possibility); **Senst** for house, electronica and
-  downtempo (Confusion, Confusion Raw). Everything is uploaded on the `balgum` SoundCloud, so the uploader
+  downtempo (Confusion, Freedom). Everything is uploaded on the `balgum` SoundCloud, so the uploader
   doesn't tell you the name: go by genre, and ask when unclear.
 - **Senst:** Spotify artist `266Jp19qo5Tb7hKkj9y2yy`, single "Confusion" (2020-02-29).
 - **Rig** (`rig.json`, Engin, 2026-11-21): Yamaha Pacifica 611HFM, Yamaha DTX6K3-X (its module is the DTX-PRO,
@@ -284,8 +290,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
 - Still drafts: five placeholder milestones (`[Electronics engineering degree]`, `[Machine learning work]`,
   `[Started backend work at Digital Loop]`, `[Guitar, first band]`, `[First half marathon]`) and one
-  SoundCloud track Engin hasn't decided on. Freedom has no `artist` yet (no genre tags to go by).
-- No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; only a tracklist playlist) or Synth
-  Sessions #2 (Engin's live set); when one appears, move the milestone to `src/sound/`.
+  SoundCloud track Engin hasn't decided on.
+- No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
+  Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
 - `LICENSE` still carries AstroPaper's copyright line.

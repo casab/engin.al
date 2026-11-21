@@ -11,20 +11,24 @@
 {%- endif -%}
 {%- endmacro -%}
 
-{#- Click-to-load player. Nothing loads from SoundCloud/Mixcloud/Bandcamp/YouTube until a click. -#}
-{%- macro player(p) -%}
+{#- Click-to-load player. Nothing loads from SoundCloud/Mixcloud/Bandcamp/YouTube until a click.
+    as: "recording" (my set or track itself) or "tracklist" (a playlist of the tracks I played, by their artists):
+    a tag says which, and a tracklist looks different (dashed rules, ≡ instead of ▶). -#}
+{%- macro player(p, as) -%}
+{%- set list = as == "tracklist" -%}
 {%- if p and p.embed -%}
-<div class="player c-sound">
-  <a class="player__facade" href="{{ p.url }}" data-embed="{{ p.embed }}" data-height="{{ p.height }}" data-video="{{ 'true' if p.video else '' }}" data-title="{{ p.label }}" rel="noopener noreferrer">
-    <span class="player__play" aria-hidden="true">▶</span>
+<div class="player c-sound{% if list %} player--list{% endif %}">
+  <a class="player__facade" href="{{ p.url }}" data-embed="{{ p.embed }}" data-height="{{ p.height }}" data-video="{{ 'true' if p.video else '' }}" data-title="{{ ('Tracklist: ' if list) + p.label }}" rel="noopener noreferrer">
+    <span class="player__play" aria-hidden="true">{{ "≡" if list else "▶" }}</span>
     <span>
+      {%- if as %}<span class="player__kind">{{ "Tracklist · not a recording" if list else "Recording" }}</span>{% endif %}
       <span class="player__label">{{ p.label }}</span>
-      <span class="mono muted">{{ p.type }} · the player loads from {{ p.type }} when clicked</span>
+      <span class="mono muted">{% if list %}the tracks I played, by their artists · {% endif %}{{ p.type }} · the player loads from {{ p.type }} when clicked</span>
     </span>
   </a>
 </div>
 {%- elif p -%}
-<p><a class="cta" href="{{ p.url }}" rel="noopener noreferrer">Listen on {{ p.label }} →</a></p>
+<p><a class="cta" href="{{ p.url }}" rel="noopener noreferrer">{{ "Tracklist on " if list else "Listen on " }}{{ p.label }} →</a></p>
 {%- endif -%}
 {%- endmacro -%}
 

@@ -55,7 +55,9 @@ eleventyComputed:
             </div>
             {%- if s.summary %}<p class="stop__summary">{{ s.summary }}</p>{% endif %}
 
-            {%- if s.embed %}{{ m.player({ url: s.embed, title: s.title, bandcamp_id: s.bandcampId } | player) }}{% endif %}
+            {#- one player per row: the recording, or the tracklist when that's all there is -#}
+            {%- if s.embed %}{{ m.player({ url: s.embed, title: s.title, bandcamp_id: s.bandcampId } | player, "recording" if s.kind == "sound") }}
+            {%- elif s.tracklist %}{{ m.player({ url: s.tracklist, title: s.title } | player, "tracklist") }}{% endif %}
 
             {%- if s.activity %}{% set a = s.activity %}
             {%- set g = a.id | route(strava, "thumb") if a.has_route else null %}
