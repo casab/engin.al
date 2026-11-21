@@ -62,7 +62,7 @@ npx wrangler dev --port 8787     # serve the production _site with _headers (lau
 | `src/projects/<slug>/index.md` | project: `lines` (first sets the colour), `short` map label, `status`, `stack`, `summary`, `links`, `cover`, `featured`, `draft` |
 | `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url` (the recording), `tracklist_url` (playlist of the tracks played), `links`; Sound line unless `lines` says otherwise |
 | `src/stops/*.md` | milestones without a page: gigs without a recording (`artist` + `kind`: dj set, live set), and **periods** (jobs, degrees: `end` = date or `present`, `role`, optional `when`). Also `title`, `short`, `date`, `lines`, `url`, `note`. `permalink: false` |
-| `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `photo`, body. Never pages |
+| `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `duplicate`, `photo`, body. Never pages |
 | `src/notes/*.md` | occasional write-ups; not on the map, not in the menu |
 | `src/_data/site.json` | the four lines (id, code, label, colour, description, url), menu, home intro, socials, `aliases` (Balgum, Senst), `strava_url` |
 | `src/_data/now.json` | Now page + departures board rows (`board`) |
@@ -272,15 +272,19 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   names into `activities.json`. Research: the route's coordinates + date → the organiser's site, ahotu, ITRA,
   sporbilet, local news. Karşıyaka (≈38.45, 27.10) hosts the Atadan Anaya and Zübeyde Hanım runs.
 - Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop) and the 10 km on
-  2024-05-18. The "Delphi ride" (2018-06-21…23, Cologne area → Eifel → Luxembourg) is the CV's "350 km
-  European tour in 3 days" from the Delphi Technologies years: 95 + 151 + 83 = 329 km, but with the 112 km
-  recording (1653492474) as day one it's 346 km, so that one is probably the full first day. Ask Engin. Many
-  other activities keep Strava's default names ("Morning Run").
+  2024-05-18. Many other activities keep Strava's default names ("Morning Run").
+- The "Delphi ride" (2018-06-21…23, Düsseldorf area → Aachen area → Eifel → Luxembourg) is the CV's "350 km
+  European tour in 3 days" from the Delphi Technologies years. Engin confirmed (2026-11-21): day one is the
+  112 km recording (1653492474; 112 + 151 + 83 = 346 km), renamed "Delphi ride day 1" via the rename list. The
+  routes check out: each day ends 0.4 km (the trimmed ends) from where the next one starts. The 95 km recording
+  of the same morning (1653487228) starts at the same spot, follows the same track (96% within 150 m) and stops
+  13 km short: a partial copy, `duplicate: true` in `src/distance/1653487228.md`.
 - **Duplicates:** the 2018 activities from April to September are on Strava twice (the `12946…` ids are a
   later re-import). The sync's `dropDuplicates()` keeps the older upload of any two with the same sport and start
   minute, in the list and in the weekly totals (11 copies on 2026-11-21). The copies are still on Strava;
-  deleting them there is Engin's call. Not caught: 2018-06-21 has a second "Morning Ride" (1653492474, 112 km,
-  starting 5 min after the 95 km race ride), maybe a second device.
+  deleting them there is Engin's call. A copy that starts at a different minute (a partial second recording)
+  isn't caught: mark it `duplicate: true` in `src/distance/<id>.md`, which drops it from the list and the weekly
+  totals (`hidden: true` only drops it from the list).
 
 ## Cloudflare
 

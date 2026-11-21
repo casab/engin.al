@@ -123,7 +123,7 @@ export default function (eleventyConfig) {
     const notesById = new Map(api.getFilteredByGlob("src/distance/*.md").map((n) => [String(n.data.strava_id || n.fileSlug), n]));
     const races = (readStrava().activities || [])
       .map((a) => ({ a, n: notesById.get(String(a.id)) }))
-      .filter(({ n }) => !(n && n.data.hidden))
+      .filter(({ n }) => !(n && (n.data.hidden || n.data.duplicate)))
       .map(({ a, n }) => ({
         id: `a${a.id}`,
         title: (n && n.data.title) || a.name,

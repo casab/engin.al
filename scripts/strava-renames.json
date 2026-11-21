@@ -19,6 +19,7 @@
     { "id": 1934200241, "date": "2018-10-28", "name": "Dalyan Caretta Run Half Marathon 2018" },
     { "id": 1918225871, "date": "2018-10-21", "name": "EÇEV Eğitime Pedalla Bisiklet Turu 2018" },
     { "id": 1889086727, "date": "2018-10-07", "name": "Bodrum Half Marathon 2018" },
-    { "id": 1813356268, "date": "2018-09-02", "name": "9 Eylül İzmir Half Marathon 2018" }
+    { "id": 1813356268, "date": "2018-09-02", "name": "9 Eylül İzmir Half Marathon 2018" },
+    { "id": 1653492474, "date": "2018-06-21", "name": "Delphi ride day 1", "race": true }
   ]
 }
