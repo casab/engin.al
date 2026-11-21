@@ -197,9 +197,15 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Content sources (where facts come from)
 
 - **Balgum gigs:** uncvl.xyz event data (`origin/main` of the uncvl repo, `lineup` with `act_type`,
-  `duration`); event URLs are `/events/<folder without date>/`.
+  `duration`); event URLs are `/events/<folder without date>/`. Gigs elsewhere: Resident Advisor
+  (`ra.co/dj/balgum`, event pages like `ra.co/events/1990893`, Moment x Byond VII). curl gets a 403 there, but
+  the page reads fine in the browser pane.
 - **Recordings:** SoundCloud `balgum` (user id 4014191). The RSS feed only has one item; the profile HTML
-  (`/balgum/tracks`, `/sets`) lists everything, track pages carry `<time pubdate>` and duration. Each page's
+  `/balgum/tracks` lists the tracks, and track pages carry `<time pubdate>` and duration. **`/balgum/sets` renders
+  only the newest playlist in its HTML** (the rest load on scroll): list them in the browser pane by scrolling
+  the page. That's how the setlists for Tyke, Dalga, Dinozor, xbeyond, Stella and F.Loki were missed at first.
+  Setlist playlists are titled `<Balgum|Senst> - <event or venue> - DD.MM.YYYY` (`/sets/tracks` and `/sets/dj-sets`
+  are collections of his own uploads, not setlists). Prefer adding a setlist as `tracklist_url`. Each page's
   `window.__sc_hydration` JSON has `kind` (track/playlist), the full title, description (tracklists) and a
   playlist's tracks with their uploaders. Engin's titles follow `Balgum - <event> - DD.MM.YYYY@(<venue>) {Set}`.
   Uncivilization Records (`uncvl`) uploads single-set tracks (`/uncvl/balgum-rehab2`, …) and one playlist per night.

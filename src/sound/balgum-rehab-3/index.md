@@ -8,6 +8,7 @@ venue: "Dalga Bar, İzmir"
 length: "1:04:44"
 summary: "My DJ set at Psyche Cure, the third Rehab night of Uncivilization."
 embed_url: "https://soundcloud.com/uncvl/balgum-rehab3"
+tracklist_url: "https://soundcloud.com/balgum/sets/uncivilization-dalga"
 links:
   - label: Event
     url: https://uncvl.xyz/events/art-rehab-3-psyche-cure/
