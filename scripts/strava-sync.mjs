@@ -4,7 +4,10 @@
 //
 // Env: STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN (from `npm run strava:auth`)
 // Optional:
-//   STRAVA_RIDE_MIN_KM        rides at least this long get a route card (default 100)
+//   STRAVA_RUN_MIN_KM         runs at least this long are shown (default 9.5); races always are
+//   STRAVA_RIDE_MIN_KM        rides at least this long are shown (default 20); races always are
+//   STRAVA_MAX_ROUTES         new route downloads per sync (default 80): Strava allows 100 requests per
+//                             15 minutes, so a big backlog fills in over the next daily syncs
 //   STRAVA_TRIM_M             metres cut from both ends of every route (default 600)
 //   STRAVA_PRIVACY_ZONES      "lat,lng,radiusM;lat,lng,radiusM": points inside are dropped as well
 //   STRAVA_TOKEN_OUT          file to write a rotated refresh token to (CI updates the repo secret from it)
@@ -13,8 +16,8 @@
 //   src/_data/strava/activities.json   { synced_at, activities: [...shown], weekly: { year: { run: [53], ride: [53], run_km, ride_km } } }
 //   src/_data/strava/routes/<id>.json  { latlng: [[lat,lng]...], alt: [m...] }  trimmed + simplified
 //
-// Which activities get a card: runs marked as Race on Strava, rides marked as Race or longer than
-// STRAVA_RIDE_MIN_KM, plus anything with `show: true` in src/distance/<id>.md. `hidden: true` there removes one.
+// Which activities are shown: races, runs of at least STRAVA_RUN_MIN_KM, rides of at least STRAVA_RIDE_MIN_KM
+// (not virtual), plus anything with `show: true` in src/distance/<id>.md. `hidden: true` there removes one.
 // Everything else only feeds the weekly totals. The token uses the `activity:read` scope, so Strava itself
 // leaves out "Only you" activities and privacy-zone data; the trim and zones here are a second layer.
 
@@ -27,7 +30,9 @@ const OUT = "src/_data/strava";
 const ROUTES = path.join(OUT, "routes");
 const API = "https://www.strava.com/api/v3";
 const env = process.env;
-const RIDE_MIN_M = Number(env.STRAVA_RIDE_MIN_KM || 100) * 1000;
+const RUN_MIN_M = Number(env.STRAVA_RUN_MIN_KM || 9.5) * 1000;
+const RIDE_MIN_M = Number(env.STRAVA_RIDE_MIN_KM || 20) * 1000;
+const MAX_ROUTES = Number(env.STRAVA_MAX_ROUTES || 80);
 const TRIM_M = Number(env.STRAVA_TRIM_M || 600);
 const ZONES = String(env.STRAVA_PRIVACY_ZONES || "")
   .split(";").map((z) => z.split(",").map(Number)).filter((z) => z.length === 3 && z.every(Number.isFinite));
@@ -189,20 +194,30 @@ async function main() {
     if (!sport || (o && o.hidden)) return false;
     if (o && o.show) return true;
     if (a.visibility === "only_me" || a.private) return false;
-    if (sport === "run") return a.workout_type === 1;
+    if (sport === "run") return a.workout_type === 1 || a.distance >= RUN_MIN_M;
     return a.workout_type === 11 || (a.distance >= RIDE_MIN_M && !/Virtual/.test(a.sport_type || ""));
   });
 
   await mkdir(ROUTES, { recursive: true });
   const existing = new Set((await readdir(ROUTES)).filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")));
   const activities = [];
-  for (const a of shown) {
+  let fetched = 0, pending = 0, limited = false;
+  for (const a of shown) { // newest first, so the latest routes arrive first
     const id = String(a.id);
     let hasRoute = existing.has(id);
-    if (!hasRoute && a.map && a.map.summary_polyline && !/Virtual/.test(a.sport_type || "")) {
-      const s = await get(access, `/activities/${id}/streams?keys=latlng,altitude&key_by_type=true`);
-      const route = s.latlng ? prepareRoute(s.latlng.data, s.altitude && s.altitude.data) : null;
-      if (route) { await writeFile(path.join(ROUTES, `${id}.json`), JSON.stringify(route) + "\n"); hasRoute = true; }
+    const wantsRoute = !hasRoute && a.map && a.map.summary_polyline && !/Virtual/.test(a.sport_type || "");
+    if (wantsRoute && (limited || fetched >= MAX_ROUTES)) pending++;
+    else if (wantsRoute) {
+      try {
+        fetched++;
+        const s = await get(access, `/activities/${id}/streams?keys=latlng,altitude&key_by_type=true`);
+        const route = s.latlng ? prepareRoute(s.latlng.data, s.altitude && s.altitude.data) : null;
+        if (route) { await writeFile(path.join(ROUTES, `${id}.json`), JSON.stringify(route) + "\n"); hasRoute = true; }
+      } catch (e) {
+        if (!/rate limited/.test(e.message)) throw e;
+        limited = true; // keep what we have; the rest comes on the next sync
+        pending++;
+      }
     }
     activities.push({
       id: a.id,
@@ -232,6 +247,7 @@ async function main() {
   const same = prev && JSON.stringify({ ...prev, synced_at: 0 }) === JSON.stringify({ ...data, synced_at: 0 });
   if (!same) await writeFile(file, JSON.stringify(data, null, 1) + "\n");
   console.log(`[strava] ${all.length} activities, ${activities.length} shown, ${keepIds.size} routes, ${calls} API calls${same ? ", no changes" : ""}`);
+  if (pending) console.log(`[strava] ${pending} route(s) not downloaded yet (limit ${MAX_ROUTES} per sync${limited ? ", hit Strava's rate limit" : ""}); the next sync continues.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
