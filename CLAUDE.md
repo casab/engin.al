@@ -273,10 +273,12 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   sporbilet, local news. Karşıyaka (≈38.45, 27.10) hosts the Atadan Anaya and Zübeyde Hanım runs.
 - Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop) and the 10 km on
   2024-05-18. Many other activities keep Strava's default names ("Morning Run").
-- The "Delphi ride" (2018-06-21…23, Cologne area → Eifel → Luxembourg) is the CV's "350 km European tour in
-  3 days" from the Delphi Technologies years. Engin confirmed (2026-11-21): day one is the 112 km recording
-  (1653492474; 112 + 151 + 83 = 346 km), renamed "Delphi ride day 1" via the rename list. The 95 km recording
-  of the same morning (1653487228) is a partial copy: `duplicate: true` in `src/distance/1653487228.md`.
+- The "Delphi ride" (2018-06-21…23, Düsseldorf area → Aachen area → Eifel → Luxembourg) is the CV's "350 km
+  European tour in 3 days" from the Delphi Technologies years. Engin confirmed (2026-11-21): day one is the
+  112 km recording (1653492474; 112 + 151 + 83 = 346 km), renamed "Delphi ride day 1" via the rename list. The
+  routes check out: each day ends 0.4 km (the trimmed ends) from where the next one starts. The 95 km recording
+  of the same morning (1653487228) starts at the same spot, follows the same track (96% within 150 m) and stops
+  13 km short: a partial copy, `duplicate: true` in `src/distance/1653487228.md`.
 - **Duplicates:** the 2018 activities from April to September are on Strava twice (the `12946…` ids are a
   later re-import). The sync's `dropDuplicates()` keeps the older upload of any two with the same sport and start
   minute, in the list and in the weekly totals (11 copies on 2026-11-21). The copies are still on Strava;
