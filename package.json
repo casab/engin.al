@@ -18,6 +18,7 @@
     "r2:file": "node scripts/r2-upload.mjs file",
     "strava:auth": "node --env-file-if-exists=.env scripts/strava-auth.mjs",
     "strava:sync": "node --env-file-if-exists=.env scripts/strava-sync.mjs",
+    "strava:rename": "node --env-file-if-exists=.env scripts/strava-rename.mjs",
     "strava:demo": "node scripts/strava-demo.mjs",
     "build:deploy": "npm run clean && eleventy && node scripts/check.mjs --ci",
     "deploy": "npm run build:deploy && wrangler deploy"
