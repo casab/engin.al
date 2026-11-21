@@ -148,7 +148,7 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   A milestone with `end` (YYYY-MM-DD or `present`) is a period. `buildStations()` adds `end` and `range`
   ("Dec 2021 – Sep 2024", "May 2025 – now"); `when` overrides the range when only years are known
   ("2012 – 2017"), and then `date`/`end` only place it (Jan 1 of the years). Meta is `role · range`. A single
-  milestone known only to the year uses `when` too ("Started playing guitar", `when: "2009"`).
+  milestone known only to the year can use `when` too (`when: "2009"`), so no invented month is shown.
 - The station sits at its start like any other. `buildNetwork()` also returns `bars`: a strip under the year
   axis (the lanes are too full of bends and labels), one bar per period from its station to where the end date
   falls between columns (`xAt`, interpolated by date), or to the terminus with an arrow while it runs.
@@ -339,8 +339,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Open items
 
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
-- Still a draft: one SoundCloud track Engin hasn't decided on. "Started playing guitar" is 2009 (Engin; no band
-  names for now), the first station on the Sound line. The first half marathon is the 9 Eylül İzmir
+- Still a draft: one SoundCloud track Engin hasn't decided on. "Started playing guitar" is December 2009 (Engin;
+  no band names for now), the first station on the Sound line. The first half marathon is the 9 Eylül İzmir
   Half Marathon 2018 (Engin, 2026-11-21): a note on its Strava station (`src/distance/1813356268.md`), not a
   separate milestone.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
