@@ -4,8 +4,8 @@
 //
 // Env: STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN (from `npm run strava:auth`)
 // Optional:
-//   STRAVA_RUN_MIN_KM         runs at least this long are shown (default 4); races always are
-//   STRAVA_RIDE_MIN_KM        rides at least this long are shown (default 10); races always are
+//   STRAVA_RUN_MIN_KM         runs at least this long are shown (default 9.5); races always are
+//   STRAVA_RIDE_MIN_KM        rides at least this long are shown (default 20); races always are
 //   STRAVA_MAX_ROUTES         new route downloads per sync (default 80): Strava allows 100 requests per
 //                             15 minutes, so a big backlog fills in over the next daily syncs
 //   STRAVA_TRIM_M             metres cut from both ends of every route (default 600)
@@ -30,8 +30,8 @@ const OUT = "src/_data/strava";
 const ROUTES = path.join(OUT, "routes");
 const API = "https://www.strava.com/api/v3";
 const env = process.env;
-const RUN_MIN_M = Number(env.STRAVA_RUN_MIN_KM || 4) * 1000;
-const RIDE_MIN_M = Number(env.STRAVA_RIDE_MIN_KM || 10) * 1000;
+const RUN_MIN_M = Number(env.STRAVA_RUN_MIN_KM || 9.5) * 1000;
+const RIDE_MIN_M = Number(env.STRAVA_RIDE_MIN_KM || 20) * 1000;
 const MAX_ROUTES = Number(env.STRAVA_MAX_ROUTES || 80);
 const TRIM_M = Number(env.STRAVA_TRIM_M || 600);
 const ZONES = String(env.STRAVA_PRIVACY_ZONES || "")
