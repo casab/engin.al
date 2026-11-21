@@ -329,13 +329,19 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   a fresh `--user-data-dir` per run (a reused profile silently produces nothing). Its minimum window width is
   ~500 px, so check phone layouts in the browser pane at 375 px instead.
 - When editing JS with Python string replacement, backslashes in regexes get mangled: use the Edit tool.
+- Line endings are mixed (many files CRLF, some LF, no `.gitattributes`). Git Bash `sed -i` and Python text
+  mode can flip a whole file: check `git diff --numstat` before committing, and edit with the Edit tool or
+  Python `newline=""`.
+- A collection can't read another template's `content` (`TemplateContentPrematureUseError`): the distance notes
+  use `rawInput` (raw Markdown) and the line page renders it with `md`.
 
 ## Open items
 
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
-- Still drafts: two placeholder milestones (`[Guitar, first band]`, `[First half marathon]`) and one
-  SoundCloud track Engin hasn't decided on. The degree, machine learning and Digital Loop placeholders were
-  replaced by the periods above.
+- Still drafts: `[Started playing guitar]` (Sound line; the 2012 date is a placeholder, and Engin said no band
+  names for now) and one SoundCloud track Engin hasn't decided on. The first half marathon is the 9 Eylül İzmir
+  Half Marathon 2018 (Engin, 2026-11-21): a note on its Strava station (`src/distance/1813356268.md`), not a
+  separate milestone.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
   Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
