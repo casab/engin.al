@@ -62,7 +62,7 @@ npx wrangler dev --port 8787     # serve the production _site with _headers (lau
 | `src/projects/<slug>/index.md` | project: `lines` (first sets the colour), `short` map label, `status`, `stack`, `summary`, `links`, `cover`, `featured`, `draft` |
 | `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url` (the recording), `tracklist_url` (playlist of the tracks played), `links`; Sound line unless `lines` says otherwise |
 | `src/stops/*.md` | milestones without a page: gigs without a recording (`artist` + `kind`: dj set, live set), and **periods** (jobs, degrees: `end` = date or `present`, `role`, optional `when`). Also `title`, `short`, `date`, `lines`, `url`, `note`. `permalink: false` |
-| `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `photo`, body. Never pages |
+| `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `duplicate`, `photo`, body. Never pages |
 | `src/notes/*.md` | occasional write-ups; not on the map, not in the menu |
 | `src/_data/site.json` | the four lines (id, code, label, colour, description, url), menu, home intro, socials, `aliases` (Balgum, Senst), `strava_url` |
 | `src/_data/now.json` | Now page + departures board rows (`board`) |
