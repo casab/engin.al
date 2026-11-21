@@ -341,14 +341,28 @@
   .line-head h1 { font-size: clamp(3.8rem, 2rem + 7vw, 8.5rem); }
   .line-head p { color: var(--ink-2); }
 
-  .strip { overflow-x: auto; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 1.2rem 0 0.9rem; }
-  .strip ol { list-style: none; padding: 0 0.5rem; margin: 0; display: flex; width: max-content; position: relative; }
-  .strip ol::before { content: ""; position: absolute; left: 1rem; right: 1rem; top: 0.55rem; height: 0.5rem; background: var(--line); }
-  .strip li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.55rem; width: 9rem; text-align: center; font-size: 0.78rem; line-height: 1.25; }
-  .strip li::before { content: ""; width: 1.6rem; height: 1.6rem; border-radius: 0.8rem; background: var(--white); border: 2.5px solid var(--ink); }
-  .strip li.is-x::before { width: 2.6rem; }
-  .strip li.is-now::before { background: var(--ink); }
-  .strip a { text-decoration: none; }
+  /* year bar: one chip per year, sticky while the list scrolls */
+  .year-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 0.75rem; background: var(--paper); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 0.4rem 0; }
+  .year-bar__line { flex: none; display: flex; align-items: center; }
+  .year-bar__line .badge { width: 2rem; height: 2rem; font-size: 0.75rem; }
+  .year-bar ol { list-style: none; padding: 0; margin: 0; display: flex; gap: 0.25rem; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent); padding-right: 2rem; }
+  .year-bar ol::-webkit-scrollbar { display: none; }
+  .year-bar a { display: inline-flex; align-items: baseline; gap: 0.35rem; min-height: 2.75rem; align-items: center; padding: 0 0.7rem; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+  .year-bar a:hover, .year-bar a.is-current { background: var(--line); color: var(--white); }
+  .year-bar__y { font-stretch: 62%; font-weight: 850; font-size: 1.35rem; }
+  .year-bar__n { font-family: var(--mono); font-size: 0.68rem; opacity: 0.75; }
+
+  /* stations grouped by year; older years start folded */
+  .year-group { scroll-margin-top: 4rem; }
+  .year-fold__head { list-style: none; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1.25rem 0 0.75rem; cursor: pointer; border-bottom: 2px solid var(--ink); }
+  .year-fold__head::-webkit-details-marker { display: none; }
+  .year-fold__head::marker { content: ""; }
+  .year-fold__head h2 { font-size: clamp(2.2rem, 1.6rem + 2vw, 3.2rem); }
+  .year-fold__head .mono::after { content: " ▾"; }
+  .year-fold:not([open]) .year-fold__head .mono::after { content: " ▸"; }
+  .year-fold__head:hover h2 { color: var(--line); }
+  .year-fold .stops { margin-top: 0.5rem; }
+  .stop { content-visibility: auto; contain-intrinsic-size: auto 9rem; }
 
   .stops { list-style: none; padding: 0; }
   .stop { display: grid; grid-template-columns: 4.5rem 2.25rem minmax(0, 1fr); column-gap: 1rem; }
@@ -361,7 +375,7 @@
   .stop__body { padding: 0.9rem 0 2rem; display: grid; gap: 0.7rem; align-content: start; border-top: 1px solid var(--rule); min-width: 0; }
   .stop:first-child .stop__body { border-top: 0; }
   .stop__title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; }
-  .stop__title h2 { font-stretch: 85%; font-weight: 750; font-size: clamp(1.3rem, 1.1rem + 0.6vw, 1.65rem); line-height: 1.1; }
+  .stop__title h3 { font-stretch: 85%; font-weight: 750; font-size: clamp(1.3rem, 1.1rem + 0.6vw, 1.65rem); line-height: 1.1; }
   .stop__title a { text-decoration: none; }
   .stop__summary { color: var(--ink-2); max-width: 40rem; }
   .stop__change { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; font-size: 0.9rem; }
@@ -376,6 +390,21 @@
 
   .aside { display: grid; gap: 2.5rem; align-content: start; }
   .aside h2 { font-size: 2rem; margin-bottom: 0.6rem; }
+  .panel__head { list-style: none; cursor: pointer; }
+  .panel__head::-webkit-details-marker { display: none; }
+  .panel__head::marker { content: ""; }
+  @media (max-width: 59.99rem) {
+    /* phones/tablets: the line's own panel comes before the list, folded to its headings */
+    .line-body > .aside { order: -1; gap: 0; border-top: 1px solid var(--ink); }
+    .line-body > .aside .panel { border-bottom: 1px solid var(--ink); }
+    .line-body > .aside .panel__head { display: flex; align-items: center; justify-content: space-between; min-height: 3.25rem; }
+    .line-body > .aside .panel__head h2 { font-size: 1.6rem; margin: 0; }
+    .line-body > .aside .panel__head::after { content: "+"; font-family: var(--mono); font-size: 1.2rem; }
+    .line-body > .aside .panel[open] .panel__head::after { content: "–"; }
+    .line-body > .aside .panel[open] { padding-bottom: 1.25rem; }
+    .line-body > .aside .aside__other { display: none; }
+    .line-body > .aside:not(:has(.panel)) { display: none; }
+  }
   .change-list { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; padding: 0; list-style: none; }
   .change-list a { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; text-decoration: none; }
   .aliases { display: grid; gap: 1.4rem; margin-top: 1.2rem; }
@@ -388,6 +417,11 @@
 
   /* distance */
   .route { display: grid; gap: 0.6rem; max-width: 19rem; }
+  @media (min-width: 40rem) {
+    /* route thumbnail beside its profile and numbers */
+    .route { max-width: 36rem; grid-template-columns: 11rem minmax(0, 1fr); column-gap: 1.25rem; align-items: end; }
+    .route > .trace, .route > .plate { grid-row: 1 / span 2; }
+  }
   .route svg { width: 100%; height: auto; }
   .route .trace path { fill: none; stroke: var(--line); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .route .trace .dot { fill: var(--ink); }

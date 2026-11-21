@@ -12,8 +12,9 @@ export function haversine([lat1, lng1], [lat2, lng2]) {
 }
 
 // Catmull-Rom → cubic Bézier, for smooth traces through sampled points.
-function smoothPath(pts) {
+function smoothPath(pts, digits = 1) {
   if (pts.length < 2) return "";
+  const f1 = digits === 0 ? Math.round : (n) => Math.round(n * 10) / 10;
   let d = `M${f1(pts[0][0])} ${f1(pts[0][1])}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
@@ -23,13 +24,24 @@ function smoothPath(pts) {
   }
   return d;
 }
-const linePath = (pts) => pts.map(([x, y], i) => `${i ? "L" : "M"}${f1(x)} ${f1(y)}`).join("");
+const roundTo = (digits) => (digits === 0 ? Math.round : f1);
+const linePath = (pts, digits = 1) => {
+  const r = roundTo(digits);
+  return pts.map(([x, y], i) => `${i ? "L" : "M"}${r(x)} ${r(y)}`).join("");
+};
+// keep at most n points, evenly spaced, always including the last one
+const thin = (pts, n) => {
+  if (!n || pts.length <= n) return pts;
+  const step = (pts.length - 1) / (n - 1);
+  return Array.from({ length: n }, (_, i) => pts[Math.round(i * step)]);
+};
 
 /**
  * Route { latlng: [[lat,lng]...], alt?: [m...] } → SVG geometry.
- * Returns { viewBox, d, elev: { viewBox, d, min, max }, scope: [[x,y]...] (normalised -1..1 for the hero scope) }.
+ * Returns { viewBox, d, elev: { viewBox, d, area, min, max }, start, end }.
+ * Options: maxPoints thins the drawing (list thumbnails), round: 0 draws integer coordinates.
  */
-export function routeGeometry(route, { w = 400, h = 300, pad = 12, elevH = 60 } = {}) {
+export function routeGeometry(route, { w = 400, h = 300, pad = 12, elevH = 60, maxPoints = 0, elevPoints = maxPoints, round = 1 } = {}) {
   const ll = route.latlng || [];
   if (ll.length < 2) return null;
   const meanLat = ll.reduce((s, p) => s + p[0], 0) / ll.length;
@@ -49,25 +61,22 @@ export function routeGeometry(route, { w = 400, h = 300, pad = 12, elevH = 60 } 
     for (let i = 1; i < ll.length; i++) dist.push(dist[i - 1] + haversine(ll[i - 1], ll[i]));
     const total = dist[dist.length - 1] || 1;
     const lo = Math.min(...alt), hi = Math.max(...alt), rng = Math.max(hi - lo, 20);
-    const e = alt.map((a, i) => [(dist[i] / total) * w, elevH - 4 - ((a - lo) / rng) * (elevH - 8)]);
-    elev = { viewBox: `0 0 ${w} ${elevH}`, d: linePath(e), area: `${linePath(e)}L${w} ${elevH}L0 ${elevH}Z`, min: Math.round(lo), max: Math.round(hi) };
+    const e = thin(alt.map((a, i) => [(dist[i] / total) * w, elevH - 4 - ((a - lo) / rng) * (elevH - 8)]), elevPoints);
+    const ed = linePath(e, round);
+    elev = { viewBox: `0 0 ${w} ${elevH}`, d: ed, area: `${ed}L${w} ${elevH}L0 ${elevH}Z`, min: Math.round(lo), max: Math.round(hi) };
   }
-
-  // normalised copy for the WebGL scope (y up), resampled to at most 256 points
-  const step = Math.max(1, Math.floor(pts.length / 256));
-  const scope = pts.filter((_, i) => i % step === 0).map(([x, y]) => [f1(((x / w) * 2 - 1) * 100) / 100, f1((1 - (y / h) * 2) * 100) / 100]);
-
-  return { viewBox: `0 0 ${w} ${h}`, d: linePath(pts), elev, scope, start: pts[0].map(f1), end: pts[pts.length - 1].map(f1) };
+  const r = roundTo(round);
+  return { viewBox: `0 0 ${w} ${h}`, d: linePath(thin(pts, maxPoints), round), elev, start: pts[0].map(r), end: pts[pts.length - 1].map(r) };
 }
 
 /**
  * Weekly distance (km per week, index 0 = ISO week 1) → a smooth waveform across the width.
  * `max` lets several years share one vertical scale.
  */
-export function weeklyTrace(weeks, { w = 1000, h = 120, max } = {}) {
+export function weeklyTrace(weeks, { w = 1000, h = 120, max, round = 1 } = {}) {
   const vals = (weeks || []).map((v) => Number(v) || 0);
   if (!vals.length) return { d: "", max: 0 };
   const top = max || Math.max(...vals, 1);
-  const pts = vals.map((v, i) => [(i / Math.max(vals.length - 1, 1)) * w, h - 6 - (v / top) * (h - 12)]);
-  return { d: smoothPath(pts), max: top, viewBox: `0 0 ${w} ${h}` };
+  const pts = vals.map((v, i) => [(i / Math.max(vals.length - 1, 1)) * w, h - 6 - (Math.min(v, top) / top) * (h - 12)]);
+  return { d: smoothPath(pts, round), max: top, viewBox: `0 0 ${w} ${h}` };
 }

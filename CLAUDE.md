@@ -98,6 +98,20 @@ vertical line diagram. Long titles need a `short` label or they collide.
   are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
 - Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
 
+## Line pages
+
+- Stations are grouped by year (`byYear` filter over `lineStations()`): one `<details data-year>` per year,
+  the newest two open. A sticky **year bar** (`.year-bar`) has one chip per year with its count; `site.js`
+  opens a folded year when its chip or `#yYYYY` is used and highlights the year in view.
+- The aside becomes `<details class="panel" data-panel>` panels. Below 60rem the aside moves above the list
+  (`order: -1`) and `site.js` folds the panels to their headings; "Other lines" is hidden there (the menu has
+  them).
+- Distance draws **thumbnails**: `route(strava, "thumb")` → `routeGeometry(..., { maxPoints: 80,
+  elevPoints: 48, round: 0 })`, line-only elevation, integer weekly traces. Keep the Distance page ≲ 150 KB
+  of HTML (it was 532 KB with full routes). `.stop` uses `content-visibility: auto`.
+- The weekly traces share one scale capped at the 97th percentile of non-empty weeks (`weeklyMax`), so one
+  big week doesn't flatten the others.
+
 ## Design rules
 
 - Paper `#EDEDE8`, ink `#121212`, one font family **Archivo** (variable width: 62% display caps, 125% wide

@@ -23,28 +23,33 @@ eleventyComputed:
     <p class="lede">{{ l.long }} {% if list.length %}{{ list.length }} station{% if list.length != 1 %}s{% endif %} so far.{% endif %}</p>
   </header>
 
-  {%- if list.length %}
-  <nav class="strip" aria-label="{{ l.label }} line, oldest to newest">
+  {%- set groups = list | byYear -%}
+  {%- if groups.length %}
+  <nav class="year-bar" aria-label="{{ l.label }} line by year">
+    <span class="year-bar__line" aria-hidden="true"><span class="badge">{{ l.code }}</span></span>
     <ol>
-      {%- for s in list | reverse %}
-      <li{% if s.lines.length > 1 %} class="is-x"{% endif %}><a href="#{{ s.id | slugify }}">{{ s.title }}</a></li>
+      {%- for year, items in groups %}
+      <li><a href="#y{{ year }}" data-year-link="{{ year }}"><span class="year-bar__y">{{ year }}</span><span class="year-bar__n">{{ items.length }}</span></a></li>
       {%- endfor %}
-      <li class="is-now"><a href="/now/">Now</a></li>
     </ol>
   </nav>
   {%- endif %}
 
-  <div class="split split--8-4 section">
+  <div class="split split--8-4 section line-body">
     <div>
       {%- if list.length %}
-      <ol class="stops">
-        {%- for s in list %}
+      {%- for year, items in groups %}
+      <section class="year-group" id="y{{ year }}" aria-labelledby="yh{{ year }}">
+        <details class="year-fold" data-year="{{ year }}"{% if loop.index <= 2 %} open{% endif %}>
+          <summary class="year-fold__head"><h2 class="display" id="yh{{ year }}">{{ year }}</h2><span class="mono muted">{{ items.length }} station{% if items.length != 1 %}s{% endif %}</span></summary>
+          <ol class="stops">
+        {%- for s in items %}
         <li class="stop{% if s.lines.length > 1 %} stop--x{% endif %}" id="{{ s.id | slugify }}">
           <span class="stop__when">{{ s.date | date("month") }}</span>
           <span class="stop__rail" aria-hidden="true"><span class="stop__dot"></span></span>
           <div class="stop__body">
             <div class="stop__title">
-              <h2>{% if s.url and s.kind != "race" and s.kind != "ride" %}<a href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ s.title }}{% if s.url.startsWith("http") %} <span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (external site)</span>{% endif %}</a>{% else %}{{ s.title }}{% endif %}</h2>
+              <h3>{% if s.url and s.kind != "race" and s.kind != "ride" %}<a href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ s.title }}{% if s.url.startsWith("http") %} <span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (external site)</span>{% endif %}</a>{% else %}{{ s.title }}{% endif %}</h3>
               <span class="mono muted">{{ s.code }} · {{ s.meta }}{% if s.draft %} · <span class="draft">draft</span>{% endif %}</span>
             </div>
             {%- if s.summary %}<p class="stop__summary">{{ s.summary }}</p>{% endif %}
@@ -52,14 +57,14 @@ eleventyComputed:
             {%- if s.embed %}{{ m.player({ url: s.embed, title: s.title, bandcamp_id: s.bandcampId } | player) }}{% endif %}
 
             {%- if s.activity %}{% set a = s.activity %}
-            {%- set g = a.id | route(strava) if a.has_route else null %}
+            {%- set g = a.id | route(strava, "thumb") if a.has_route else null %}
             <div class="route">
               {%- if g %}
               <svg class="trace" viewBox="{{ g.viewBox }}" role="img" aria-label="Route of {{ s.title }}, trimmed at both ends">
                 <path d="{{ g.d }}"/><circle class="dot" cx="{{ g.start[0] }}" cy="{{ g.start[1] }}" r="4"/>
               </svg>
               {%- if g.elev %}
-              <svg class="elev" viewBox="{{ g.elev.viewBox }}" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="{{ g.elev.area }}"/><path d="{{ g.elev.d }}"/></svg>
+              <svg class="elev" viewBox="{{ g.elev.viewBox }}" preserveAspectRatio="none" aria-hidden="true"><path d="{{ g.elev.d }}"/></svg>
               {%- endif %}
               {%- elif s.photo %}
               <figure class="plate">{% image s.photo, s.photoAlt, "26rem" %}</figure>
@@ -79,7 +84,10 @@ eleventyComputed:
           </div>
         </li>
         {%- endfor %}
-      </ol>
+          </ol>
+        </details>
+      </section>
+      {%- endfor %}
       {%- else %}
       <p class="lede muted">No stations on this line yet.{% if l.id == "distance" %} Races appear here after the first Strava sync.{% endif %}</p>
       {%- endif %}
@@ -87,8 +95,8 @@ eleventyComputed:
 
     <aside class="aside">
       {%- if l.id == "sound" and site.aliases and site.aliases.length %}
-      <section aria-labelledby="aliases-title">
-        <h2 class="display" id="aliases-title">Names on the bill</h2>
+      <details class="panel" data-panel open>
+        <summary class="panel__head"><h2 class="display" id="aliases-title">Names on the bill</h2></summary>
         <div class="aliases">
           {%- for a in site.aliases %}
           <div class="alias">
@@ -101,18 +109,18 @@ eleventyComputed:
         {%- for a in site.aliases %}{% for k in a.links %}{% if "open.spotify.com" in k.url %}
         <div class="alias-player">{{ m.player({ url: k.url, title: a.name + " on Spotify" } | player) }}</div>
         {%- endif %}{% endfor %}{% endfor %}
-      </section>
+      </details>
       {%- endif %}
 
       {%- if l.id == "sound" and rig.items and rig.items.length %}
-      <section aria-labelledby="rig-title">
-        <h2 class="display" id="rig-title">Rolling stock</h2>
+      <details class="panel" data-panel open>
+        <summary class="panel__head"><h2 class="display" id="rig-title">Rolling stock</h2></summary>
         <ul class="rig">
           {%- for r in rig.items %}
           <li><span>{{ r.name }}</span><span class="mono muted">{{ r.kind }}</span>{% if r.note %}<p>{{ r.note }}</p>{% endif %}</li>
           {%- endfor %}
         </ul>
-      </section>
+      </details>
       {%- endif %}
 
       {%- if l.id == "distance" %}
@@ -120,13 +128,13 @@ eleventyComputed:
       {%- set years = weekly | weeklyYears %}
       {%- set top = weekly | weeklyMax %}
       {%- if years.length %}
-      <section aria-labelledby="weeks-title">
-        <h2 class="display" id="weeks-title">Every week</h2>
+      <details class="panel" data-panel open>
+        <summary class="panel__head"><h2 class="display" id="weeks-title">Every week</h2></summary>
         <p class="muted">Weekly distance, one trace per year, January on the left. Same scale for every year.</p>
         <div class="legend"><span class="tag"><span class="bar" aria-hidden="true"></span>Run</span><span class="tag ride"><span class="bar" aria-hidden="true"></span>Ride</span></div>
         <div class="years">
           {%- for y in years %}
-          {%- set run = weekly[y].run | weeklyTrace({ max: top }) %}{% set ride = weekly[y].ride | weeklyTrace({ max: top }) %}
+          {%- set run = weekly[y].run | weeklyTrace({ max: top, round: 0 }) %}{% set ride = weekly[y].ride | weeklyTrace({ max: top, round: 0 }) %}
           <div class="yr">
             <span class="mono">{{ y }}</span>
             <svg viewBox="0 0 1000 120" preserveAspectRatio="none" role="img" aria-label="{{ y }}: {{ weekly[y].run_km or 0 }} km run, {{ weekly[y].ride_km or 0 }} km ridden">
@@ -135,13 +143,13 @@ eleventyComputed:
           </div>
           {%- endfor %}
         </div>
-      </section>
+      </details>
       {%- endif %}
       {%- if site.strava_url %}<p><a class="cta" href="{{ site.strava_url }}" rel="me noopener noreferrer">Follow on Strava ↗</a></p>{% endif %}
       <p class="mono muted">Data powered by <a href="https://www.strava.com" rel="noopener noreferrer">Strava</a>{% if strava.activities.synced_at %} · synced {{ strava.activities.synced_at | date("long") }}{% endif %}. Routes are trimmed at both ends.</p>
       {%- endif %}
 
-      <section aria-labelledby="change-title">
+      <section class="aside__other" aria-labelledby="change-title">
         <h2 class="display" id="change-title">Other lines</h2>
         <ul class="change-list">
           {%- for o in site.lines %}{% if o.id != l.id %}
