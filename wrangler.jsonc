@@ -19,6 +19,9 @@
     "not_found_handling": "404-page",
     "run_worker_first": ["/api/*"]
   },
+  // Media bucket (EEUR), public at https://media.engin.al. No R2 access keys anywhere: uploads go through
+  // `npm run r2:media` (wrangler, your Cloudflare login) and the Worker reaches it through this binding.
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "enginal-media" }],
   // GitHub OAuth app for the CMS sign-in: callback https://engin.al/api/auth/callback.
   // GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET live on the Worker as secrets (dashboard → engin-al →
   // Settings → Variables and secrets, type "Secret"), so deploys never overwrite them. The Client ID is
