@@ -127,6 +127,7 @@ export function buildNetwork(stations, lines) {
       year: new Date(s.date).getUTCFullYear(),
       date: s.date instanceof Date ? s.date.toISOString().slice(0, 10) : String(s.date).slice(0, 10),
       meta: s.meta || "",
+      range: s.range || null,
       summary: String(s.summary || "").replace(/\s+/g, " ").slice(0, 140),
       x: r(s.x),
       y: r(anchorY),
@@ -141,13 +142,49 @@ export function buildNetwork(stations, lines) {
     const y = new Date(s.date).getUTCFullYear();
     if (!i || y !== new Date(list[i - 1].date).getUTCFullYear()) years.push({ x: r(s.x), label: String(y) });
   });
+  // Periods (jobs, degrees: stations with `end`) also get a bar in a strip under the year axis, from their
+  // station to where the end date falls between the columns, or to the terminus while they run. The lanes are
+  // full of bends and labels, so the bars live on the time axis instead. Overlapping bars stack on rows.
+  const times = list.map((s) => new Date(s.date).getTime());
+  const runOut = hubX - LANE_GAP * 1.5; // the lanes start bending into the terminus about here
+  const xAt = (t) => {
+    if (!list.length) return runOut;
+    const n = list.length - 1;
+    if (t >= times[n]) {
+      const span = Math.max(Date.now() - times[n], 1);
+      return list[n].x + Math.min(1, (t - times[n]) / span) * (runOut - list[n].x);
+    }
+    let i = 0;
+    while (i < n && times[i + 1] <= t) i++;
+    const f = times[i + 1] > times[i] ? (t - times[i]) / (times[i + 1] - times[i]) : 0;
+    return list[i].x + f * (list[i + 1].x - list[i].x);
+  };
+  const rowEnds = [];
+  const bars = [];
+  list.forEach((s, i) => {
+    if (!s.end) return;
+    const open = s.end === "present";
+    const x1 = s.x;
+    const x2 = open ? runOut : Math.max(xAt(new Date(s.end).getTime()), x1 + 12);
+    const text = `${s.short || s.title} · ${s.range || ""}`;
+    const reach = Math.max(x2, x1 + textWidth(text, 7.4));
+    let row = rowEnds.findIndex((end) => x1 >= end + 18);
+    if (row < 0) row = rowEnds.push(-Infinity) - 1;
+    rowEnds[row] = reach;
+    // a long bar repeats its name at the end, so it reads wherever the map is scrolled to
+    const endText = x2 - x1 > 1100 ? `${s.short || s.title}${open ? " · now" : ""}` : null;
+    bars.push({ line: s.lines[0], lines: s.lines, open, x1: r(x1), x2: r(x2), row, text, endText, title: s.title });
+  });
+  const barTop = axisY + 52;
+  bars.forEach((b) => (b.y = barTop + b.row * 34));
   const ys = Object.values(hubY);
   return {
     width: Math.ceil(hubX + 130),
-    height: axisY + 30,
+    height: bars.length ? barTop + rowEnds.length * 34 : axisY + 30,
     axisY,
     paths,
     stations: out,
+    bars,
     years,
     hub: { x: r(hubX - 2), y: r(Math.min(...ys) - 16), w: 34, h: r(Math.max(...ys) - Math.min(...ys) + 32), labelX: r(hubX + 46), labelY: r(centerY + 8) },
   };

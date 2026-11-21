@@ -61,6 +61,14 @@ eleventyComputed:
       {%- if w and w.ride_km %}<dt>Ridden</dt><dd>{{ w.ride_km }} km</dd>{% endif %}
       {%- if yr.races %}<dt>Races</dt><dd>{{ yr.races }}</dd>{% endif %}
     </dl>
+    {%- if yr.ongoing.length %}
+    <h2 class="display year-aside__title year-aside__ongoing">Still running in {{ yr.year }}</h2>
+    <ul class="ongoing">
+      {%- for s in yr.ongoing %}
+      <li class="c-{{ s.lines[0] }}"><span class="bar" aria-hidden="true"></span>{% if s.url %}<a href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ s.title }}</a>{% else %}{{ s.title }}{% endif %} <span class="mono muted">{{ s.range }}</span></li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
     {%- if w and (w.run_km or w.ride_km) %}
     <p class="mono muted year-aside__note">Distance totals count every Strava activity that year, not only the ones on the map.</p>
     {%- endif %}

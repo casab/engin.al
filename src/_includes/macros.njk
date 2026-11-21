@@ -71,10 +71,21 @@
       {%- endfor %}
       {%- for s in net.stations %}
       <g class="st{% if s.interchange %} st--x{% endif %}{% if s.minor %} st--minor{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}" data-st="{{ loop.index0 }}" data-year="{{ s.year }}">
-        {%- if s.url %}<a href="{{ s.url }}" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% else %}<g class="st__plain" role="img" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% endif %}
+        {%- set when = s.range or (s.date | date('month')) %}
+        {%- if s.url %}<a href="{{ s.url }}" aria-label="{{ s.title }}, {{ when }}">{% else %}<g class="st__plain" role="img" aria-label="{{ s.title }}, {{ when }}">{% endif %}
         {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/><circle class="hit" cx="{{ s.x }}" cy="{{ s.y }}" r="18"/>{% endif %}
         <text x="{{ s.label.x }}" y="{{ s.label.y }}" text-anchor="middle">{{ s.text }}</text>
         {%- if s.url %}</a>{% else %}</g>{% endif %}
+      </g>
+      {%- endfor %}
+      {#- periods (jobs, degrees) on the time axis: start dot, bar, an end tick or an arrow while it runs -#}
+      {%- for b in net.bars %}
+      <g class="span c-{{ b.line }}{% for l in b.lines %} on-{{ l }}{% endfor %}{% if b.open %} span--open{% endif %}" aria-hidden="true">
+        <path d="M{{ b.x1 }} {{ b.y }}H{{ b.x2 }}"/>
+        <path class="span__tip" d="{% if b.open %}M{{ b.x2 - 7 }} {{ b.y - 7 }}L{{ b.x2 + 1 }} {{ b.y }}L{{ b.x2 - 7 }} {{ b.y + 7 }}{% else %}M{{ b.x2 }} {{ b.y - 7 }}V{{ b.y + 7 }}{% endif %}"/>
+        <circle cx="{{ b.x1 }}" cy="{{ b.y }}" r="4.5"/>
+        <text x="{{ b.x1 - 4 }}" y="{{ b.y - 11 }}">{{ b.text }}</text>
+        {%- if b.endText %}<text x="{{ b.x2 - 12 }}" y="{{ b.y - 11 }}" text-anchor="end">{{ b.endText }}</text>{% endif %}
       </g>
       {%- endfor %}
       {%- if end %}<a class="hub" href="{{ endUrl }}" aria-label="{{ end.note or endLabel }}">{% else %}<g class="hub">{% endif %}
@@ -140,7 +151,7 @@
     <div class="stopnav__rail">
       {%- for dir in ["older", "newer"] %}{% set s = st[dir] %}
       {%- if s %}
-      {%- set label %}<span class="mono muted">{% if dir == "older" %}← older · {% endif %}{{ s.date | date("month") }}{% if dir == "newer" %} · newer →{% endif %}</span><span class="stopnav__t">{{ s.title }}</span>{% endset %}
+      {%- set label %}<span class="mono muted">{% if dir == "older" %}← older · {% endif %}{{ s.range if s.range else (s.date | date("month")) }}{% if dir == "newer" %} · newer →{% endif %}</span><span class="stopnav__t">{{ s.title }}</span>{% endset %}
       {%- if s.url %}<a class="stopnav__stop stopnav__stop--{{ dir }}" href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ label | safe }}</a>
       {%- else %}<span class="stopnav__stop stopnav__stop--{{ dir }}">{{ label | safe }}</span>{% endif %}
       {%- else %}

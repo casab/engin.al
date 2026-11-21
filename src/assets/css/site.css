@@ -380,11 +380,16 @@
   .map .year { font-family: var(--mono); font-size: 11px; fill: var(--pencil); }
   .map .hub rect { fill: var(--ink); }
   .map .hub text { font-family: var(--sans); font-stretch: 62%; font-weight: 850; font-size: 24px; fill: var(--ink); }
-  .map .ln, .map .st { transition: opacity 0.25s var(--ease); }
-  .network:has(#f-code:checked) .ln:not(.c-code), .network:has(#f-code:checked) .st:not(.on-code),
-  .network:has(#f-circuits:checked) .ln:not(.c-circuits), .network:has(#f-circuits:checked) .st:not(.on-circuits),
-  .network:has(#f-sound:checked) .ln:not(.c-sound), .network:has(#f-sound:checked) .st:not(.on-sound),
-  .network:has(#f-distance:checked) .ln:not(.c-distance), .network:has(#f-distance:checked) .st:not(.on-distance) { opacity: 0.12; }
+  /* periods (jobs, degrees) under the year axis */
+  .map .span path { fill: none; stroke: var(--line); stroke-width: 6; stroke-linecap: round; }
+  .map .span .span__tip { stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .map .span circle { fill: var(--white); stroke: var(--line); stroke-width: 2.5; }
+  .map .span text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  .map .ln, .map .st, .map .span { transition: opacity 0.25s var(--ease); }
+  .network:has(#f-code:checked) .ln:not(.c-code), .network:has(#f-code:checked) .st:not(.on-code), .network:has(#f-code:checked) .span:not(.on-code),
+  .network:has(#f-circuits:checked) .ln:not(.c-circuits), .network:has(#f-circuits:checked) .st:not(.on-circuits), .network:has(#f-circuits:checked) .span:not(.on-circuits),
+  .network:has(#f-sound:checked) .ln:not(.c-sound), .network:has(#f-sound:checked) .st:not(.on-sound), .network:has(#f-sound:checked) .span:not(.on-sound),
+  .network:has(#f-distance:checked) .ln:not(.c-distance), .network:has(#f-distance:checked) .st:not(.on-distance), .network:has(#f-distance:checked) .span:not(.on-distance) { opacity: 0.12; }
   /* phones: the newest 12 stations; "show all" (CSS-only) or any line filter reveals the rest */
   .diagram__row.is-more { display: none; }
   .network:has(#d-all:checked) .diagram__row.is-more,
@@ -609,6 +614,10 @@
   .year-line .track { grid-template-columns: 3.5rem 1fr; }
   .year-aside__title { font-size: 2rem; margin-bottom: 0.75rem; }
   .year-aside__note { font-size: 0.72rem; margin-top: 1rem; }
+  .year-aside__ongoing { margin-top: 2rem; }
+  .ongoing { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+  .ongoing li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.5rem; padding: 0.55rem 0; border-top: 1px solid var(--rule); min-height: 2.75rem; }
+  .ongoing .bar { flex: none; width: 1.25rem; height: 4px; background: var(--line); align-self: center; }
 }
 
 @layer motion {

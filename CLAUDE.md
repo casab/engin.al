@@ -61,7 +61,7 @@ npx wrangler dev --port 8787     # serve the production _site with _headers (lau
 |---|---|
 | `src/projects/<slug>/index.md` | project: `lines` (first sets the colour), `short` map label, `status`, `stack`, `summary`, `links`, `cover`, `featured`, `draft` |
 | `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url` (the recording), `tracklist_url` (playlist of the tracks played), `links`; Sound line unless `lines` says otherwise |
-| `src/stops/*.md` | milestones without a page (gigs without a recording, degree, jobs): `title`, `short`, `date`, `lines`, `artist` + `kind` (gigs: dj set, live set), `url`, `note`. `permalink: false` |
+| `src/stops/*.md` | milestones without a page: gigs without a recording (`artist` + `kind`: dj set, live set), and **periods** (jobs, degrees: `end` = date or `present`, `role`, optional `when`). Also `title`, `short`, `date`, `lines`, `url`, `note`. `permalink: false` |
 | `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `photo`, body. Never pages |
 | `src/notes/*.md` | occasional write-ups; not on the map, not in the menu |
 | `src/_data/site.json` | the four lines (id, code, label, colour, description, url), menu, home intro, socials, `aliases` (Balgum, Senst), `strava_url` |
@@ -141,6 +141,25 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   static WOFF cuts of Archivo (62%/850, 125%/650, 100%/500); regenerate with `scripts/og-fonts.py` (needs
   `fonttools` + `brotli` in a venv) only if the card needs another style.
 - `robots.txt` points at `/sitemap.xml`.
+
+## Periods (jobs, degrees)
+
+- Engin (2026-11-21): jobs are periods, not instants; "it would look weird if we only put the starting time".
+  A milestone with `end` (YYYY-MM-DD or `present`) is a period. `buildStations()` adds `end` and `range`
+  ("Dec 2021 – Sep 2024", "May 2025 – now"); `when` overrides the range when only years are known
+  ("2012 – 2017"), and then `date`/`end` only place it (Jan 1 of the years). Meta is `role · range`.
+- The station sits at its start like any other. `buildNetwork()` also returns `bars`: a strip under the year
+  axis (the lanes are too full of bends and labels), one bar per period from its station to where the end date
+  falls between columns (`xAt`, interpolated by date), or to the terminus with an arrow while it runs.
+  Overlapping bars stack on rows; long bars repeat the name at the end. Bars follow the line filter (`.span`).
+- Lists show the start (`range` before " – ") in the date column and the range in the meta; map cards and
+  "Next stops" show the range. Year pages list periods still running that year ("Still running in", `ongoing`).
+- Sources: the CV (LaTeX, Engin, 2026) and the LinkedIn export (`Profile.pdf`): Semafor Teknoloji internship
+  (Aug–Sep 2016), Delphi Technologies (Sep 2017–Oct 2019, İzmir), freelance (Jun–Dec 2020), Akinon (Jan–Dec
+  2021), Gowit (Dec 2021–Sep 2024), Digital Loop (May 2025–). B.Sc. Dokuz Eylül 2012–2017 after a year at
+  Eskişehir Osmangazi; M.Sc. Dokuz Eylül 2017–2019, coursework completed. Courses were left out (Engin: the CV's
+  list is partial). Marathon times and half-marathon counts stay off the site: official times differ from
+  Strava and many halves weren't recorded. Employer work gets one plain line per job, never a project page.
 
 ## Year pages
 
@@ -252,8 +271,10 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   (Engin runs it) asks for `activity:write` once, keeps that token in memory only, renames, and mirrors the
   names into `activities.json`. Research: the route's coordinates + date → the organiser's site, ahotu, ITRA,
   sporbilet, local news. Karşıyaka (≈38.45, 27.10) hosts the Atadan Anaya and Zübeyde Hanım runs.
-- Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop), the
-  "Delphi ride" days (2018-06-21…23, Cologne area → Eifel → Luxembourg), and the 10 km on 2024-05-18. Many
+- Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop) and the 10 km on
+  2024-05-18. The "Delphi ride" (2018-06-21…23, Cologne area → Eifel → Luxembourg) is the CV's "350 km
+  European tour in 3 days" from the Delphi Technologies years: 95 + 151 + 83 = 329 km, but with the 112 km
+  recording (1653492474) as day one it's 346 km, so that one is probably the full first day. Ask Engin. Many
   other activities keep Strava's default names ("Morning Run").
 - **Duplicates:** the 2018 activities from April to September are on Strava twice (the `12946…` ids are a
   later re-import). The sync's `dropDuplicates()` keeps the older upload of any two with the same sport and start
@@ -308,9 +329,9 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Open items
 
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
-- Still drafts: five placeholder milestones (`[Electronics engineering degree]`, `[Machine learning work]`,
-  `[Started backend work at Digital Loop]`, `[Guitar, first band]`, `[First half marathon]`) and one
-  SoundCloud track Engin hasn't decided on.
+- Still drafts: two placeholder milestones (`[Guitar, first band]`, `[First half marathon]`) and one
+  SoundCloud track Engin hasn't decided on. The degree, machine learning and Digital Loop placeholders were
+  replaced by the periods above.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
   Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.

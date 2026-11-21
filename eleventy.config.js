@@ -93,12 +93,19 @@ export default function (eleventyConfig) {
     try { return JSON.parse(readFileSync("src/_data/strava/activities.json", "utf8")); } catch { return { activities: [] }; }
   };
   eleventyConfig.addWatchTarget("src/_data/strava/");
+  // Periods (jobs, degrees): a milestone with `end` (a date or "present") runs from `date` to `end`. `when`
+  // overrides the shown range when only years are known ("2012 – 2017"); the dates then only place it.
+  const monthYear = (d) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, month: "short", year: "numeric" }).format(toDate(d));
+  const rangeOf = (data) => (!data.end ? null : data.when || `${monthYear(data.date)} – ${data.end === "present" ? "now" : monthYear(data.end)}`);
+  const endOf = (data) => (!data.end ? null : data.end === "present" ? "present" : toDate(data.end));
   const buildStations = (api) => {
     const fromItem = (item, kind, meta) => ({
       id: item.url || item.fileSlug,
       title: item.data.title,
       short: item.data.short || null,
       date: toDate(item.data.date),
+      end: endOf(item.data),
+      range: rangeOf(item.data),
       lines: item.data.lines || [],
       url: item.url || item.data.url || null,
       kind,
@@ -136,7 +143,8 @@ export default function (eleventyConfig) {
       // "tracklist only" wherever the meta shows (line page, map card, search): there's no recording to play
       ...sound(api).map((p) => fromItem(p, "sound", [p.data.artist, p.data.kind, !p.data.embed_url && p.data.tracklist_url && "tracklist only", toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       // a gig without a recording of my own set is a stop too: artist and kind (dj set, live set) like a recording
-      ...stops(api).map((p) => fromItem(p, "stop", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
+      // a period (job, degree) shows its role and range instead
+      ...stops(api).map((p) => fromItem(p, "stop", (p.data.end ? [p.data.role, rangeOf(p.data)] : [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()]).filter(Boolean).join(" · "))),
       ...races,
     ].sort((a, b) => b.date - a.date);
   };
@@ -144,7 +152,8 @@ export default function (eleventyConfig) {
   // one entry per year with stations, newest first: the /years/<yyyy>/ pages paginate over it
   eleventyConfig.addCollection("stationYears", (api) => {
     const groups = new Map();
-    for (const s of buildStations(api)) {
+    const all = buildStations(api);
+    for (const s of all) {
       const y = s.date.getUTCFullYear();
       if (!groups.has(y)) groups.set(y, []);
       groups.get(y).push(s);
@@ -158,6 +167,8 @@ export default function (eleventyConfig) {
         year, stations, lines,
         interchanges: stations.filter((s) => s.lines.length > 1).length,
         races: stations.filter((s) => s.activity && s.activity.race).length,
+        // periods (jobs, degrees) that began in an earlier year and were still running in this one
+        ongoing: all.filter((s) => s.end && s.date.getUTCFullYear() < year && (s.end === "present" || s.end.getUTCFullYear() >= year)),
         newer: years[i - 1] || null,
         older: years[i + 1] || null,
       };
@@ -252,9 +263,9 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("mapCards", (stations, lines) => {
     const code = Object.fromEntries((lines || []).map((l) => [l.id, [l.code, l.label]]));
     const month = (d) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, month: "short", year: "numeric" }).format(toDate(d));
-    // the card already shows month + year, so a bare year in meta (a project's status) would repeat it
-    const meta = (s) => (s.meta || "").split(" · ").filter((p) => p !== String(toDate(s.date).getUTCFullYear())).join(" · ");
-    return (stations || []).map((s) => ({ t: s.title, d: month(s.date), m: meta(s), s: s.summary, u: s.url, l: s.lines.map((id) => [id, ...(code[id] || [id, id])]) }));
+    // the card already shows month + year (or a period's range), so a bare year or the range in meta would repeat it
+    const meta = (s) => (s.meta || "").split(" · ").filter((p) => p !== String(toDate(s.date).getUTCFullYear()) && p !== s.range).join(" · ");
+    return (stations || []).map((s) => ({ t: s.title, d: s.range || month(s.date), m: meta(s), s: s.summary, u: s.url, l: s.lines.map((id) => [id, ...(code[id] || [id, id])]) }));
   });
   // /search.json: every station and note, newest first, with short keys (search.js reads them)
   const KIND = { project: "Project", sound: "Recording", stop: "Milestone", race: "Run", ride: "Ride", note: "Note" };
