@@ -72,6 +72,7 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/assets/js/site.js` | click-to-load players, split-flap flip, `#f-<line>` filter hash. Everything works without it |
 | `src/assets/js/map.js` | the explorable map (pan, timeline, keyboard, station cards); imported by `site.js` |
 | `src/assets/js/search.js` | the search dialog and the live search on `/search/`; imported by `site.js` on first use |
+| `src/pages/years.njk`, `year.njk` | `/years/` and `/years/<yyyy>/`, paginated over the `stationYears` collection |
 | `src/pages/search.njk`, `search-index.njk` | `/search/` (A–Z by line, the no-JS fallback) and `/search.json` (`searchIndex` filter) |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
 | `scripts/` | `check.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
@@ -111,6 +112,17 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   and choosing a line filter shows every station of that line. When adding filter rules, the reveal rules
   are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
 - Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
+
+## Year pages
+
+- `stationYears` collection (`eleventy.config.js`, built from the same `buildStations()` as `stations`):
+  `{ year, stations, lines: { id: n }, interchanges, races, newer, older }`, newest first. Only years with
+  stations get a page (drafts count only in `npm run serve`, so 2012/2015 show locally but not live).
+- A year page draws `network` with only that year's lines (`linesIn` filter), no timeline, and the terminus
+  is the next year (`end` argument of the macro: `{ label, url, note }`; default is Now → `/now/`).
+- "In numbers" uses the Strava `weekly` totals (`run_km`, `ride_km`), which count every activity, not only
+  the ones on the map; the page says so.
+- Linked from the map's timeline ("Year by year →"), each year on a line page, the menu and the footer.
 
 ## Search
 

@@ -1,0 +1,68 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: collections.stationYears
+  size: 1
+  alias: yr
+permalink: "/years/{{ yr.year }}/"
+eleventyComputed:
+  title: "{{ yr.year }}"
+  description: "{{ yr.year }} on the network: projects, recordings, milestones and runs from that year."
+---
+{%- import "macros.njk" as m -%}
+{%- set weekly = strava.activities.weekly or {} -%}
+{%- set w = weekly[yr.year] -%}
+{%- set end = { label: yr.newer ~ "", url: "/years/" + yr.newer + "/", note: "on to " + yr.newer } if yr.newer else null -%}
+
+<div class="wrap">
+  <header class="page-head year-head">
+    <a class="label" href="/years/">← Year by year</a>
+    <h1 class="display">{{ yr.year }}</h1>
+    <p class="lede">{{ yr.stations.length }} station{% if yr.stations.length != 1 %}s{% endif %} {% set nl = yr.lines | length %}on {{ nl }} line{% if nl != 1 %}s{% endif %}{% if yr.interchanges %}, {{ yr.interchanges }} of them interchange{% if yr.interchanges != 1 %}s{% endif %}{% endif %}.</p>
+    <nav class="year-pager" aria-label="Other years">
+      {%- if yr.older %}<a class="cta" href="/years/{{ yr.older }}/" rel="prev">← {{ yr.older }}</a>{% else %}<span></span>{% endif %}
+      {%- if yr.newer %}<a class="cta" href="/years/{{ yr.newer }}/" rel="next">{{ yr.newer }} →</a>{% endif %}
+    </nav>
+  </header>
+</div>
+
+{{ m.network(yr.stations, site.lines | linesIn(yr.lines), end, false, "The network in " + yr.year) }}
+
+<div class="wrap split split--8-4 section">
+  <div class="year-lines">
+    {%- for l in site.lines %}
+    {%- set items = yr.stations | lineStations(l.id, site.lines) %}
+    {%- if items.length %}
+    <section class="year-line c-{{ l.id }}" aria-labelledby="yl-{{ l.id }}">
+      <h2 class="year-line__head" id="yl-{{ l.id }}"><a href="{{ l.url }}#y{{ yr.year }}"><span class="badge" aria-hidden="true">{{ l.code }}</span>{{ l.label }}</a> <span class="mono muted">{{ items.length }}</span></h2>
+      <ol class="tracks">
+        {%- for s in items %}
+        <li class="track">
+          <span class="track__n">{{ s.date | date("day") }}</span>
+          <span class="track__t">{% if s.url %}<a href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</span>
+          <span class="track__m">{% if s.lines.length > 1 %}interchange {% for o in s.lines %}{{ (o | lineInfo(site.lines)).code }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}{{ s.meta }}{% endif %}{% if s.draft %} · <span class="draft">draft</span>{% endif %}</span>
+        </li>
+        {%- endfor %}
+      </ol>
+    </section>
+    {%- endif %}
+    {%- endfor %}
+  </div>
+
+  <aside class="aside">
+    <h2 class="display year-aside__title">In numbers</h2>
+    <dl class="credits credits--ruled">
+      <dt>Stations</dt><dd>{{ yr.stations.length }}</dd>
+      {%- for l in site.lines %}{% if yr.lines[l.id] %}
+      <dt>{{ l.code }} {{ l.label }}</dt><dd>{{ yr.lines[l.id] }}</dd>
+      {%- endif %}{% endfor %}
+      {%- if yr.interchanges %}<dt>Interchanges</dt><dd>{{ yr.interchanges }}</dd>{% endif %}
+      {%- if w and w.run_km %}<dt>Run</dt><dd>{{ w.run_km }} km</dd>{% endif %}
+      {%- if w and w.ride_km %}<dt>Ridden</dt><dd>{{ w.ride_km }} km</dd>{% endif %}
+      {%- if yr.races %}<dt>Races</dt><dd>{{ yr.races }}</dd>{% endif %}
+    </dl>
+    {%- if w and (w.run_km or w.ride_km) %}
+    <p class="mono muted year-aside__note">Distance totals count every Strava activity that year, not only the ones on the map.</p>
+    {%- endif %}
+  </aside>
+</div>

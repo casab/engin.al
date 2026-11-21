@@ -29,10 +29,13 @@
 {%- endmacro -%}
 
 {#- The network map (desktop) and the same stations as a vertical diagram (phones), with a line filter -#}
-{%- macro network(stations, lines) -%}
+{#- end: the terminus, { label, url, note } (default: Now). timeline: false hides the year jumps (one-year maps). #}
+{%- macro network(stations, lines, end = null, timeline = true, heading = "The network") -%}
 {%- set net = stations | network(lines) -%}
+{%- set endLabel = end.label if end else "Now" -%}
+{%- set endUrl = end.url if end else "/now/" -%}
 <section class="network wrap" aria-labelledby="network-title">
-  <h2 class="sr-only" id="network-title">The network</h2>
+  <h2 class="sr-only" id="network-title">{{ heading }}</h2>
   <fieldset class="filter">
     <legend class="sr-only">Show one line</legend>
     <input type="radio" name="line" id="f-all" value="all" checked><label for="f-all"><span class="bar" aria-hidden="true"></span>All lines</label>
@@ -43,17 +46,20 @@
   </fieldset>
 
   {#- Year jumps for the map: shown by map.js (they scroll the map), hidden without JS #}
+  {%- if timeline and net.years.length > 1 %}
   <div class="timeline" data-timeline hidden>
     <span class="label">Jump to</span>
     <ol>
       {%- for y in net.years %}<li><button type="button" data-map-year="{{ y.label }}">{{ y.label }}</button></li>{% endfor %}
       <li><button type="button" data-map-year="now">Now</button></li>
     </ol>
+    <a class="timeline__all" href="/years/">Year by year →</a>
   </div>
+  {%- endif %}
 
   <div class="map{% if net.width > 1400 %} is-wide{% endif %}">
     <svg viewBox="0 0 {{ net.width }} {{ net.height }}" width="{{ net.width }}" height="{{ net.height }}" role="img" aria-labelledby="map-desc">
-      <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on four lines: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
+      <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on {{ lines.length }} line{% if lines.length != 1 %}s{% endif %}: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
       <path class="axis" d="M0 {{ net.axisY }}H{{ net.width }}"/>
       {%- for y in net.years %}<text class="year" x="{{ y.x }}" y="{{ net.axisY + 20 }}" text-anchor="middle">{{ y.label }}</text>{% endfor %}
       {%- for p in net.paths %}
@@ -67,10 +73,10 @@
         {%- if s.url %}</a>{% else %}</g>{% endif %}
       </g>
       {%- endfor %}
-      <g class="hub">
+      {%- if end %}<a class="hub" href="{{ endUrl }}" aria-label="{{ end.note or endLabel }}">{% else %}<g class="hub">{% endif %}
         <rect x="{{ net.hub.x }}" y="{{ net.hub.y }}" width="{{ net.hub.w }}" height="{{ net.hub.h }}" rx="17"/>
-        <text x="{{ net.hub.labelX }}" y="{{ net.hub.labelY }}">NOW</text>
-      </g>
+        <text x="{{ net.hub.labelX }}" y="{{ net.hub.labelY }}">{{ endLabel | upper }}</text>
+      {%- if end %}</a>{% else %}</g>{% endif %}
     </svg>
   </div>
   <div class="map-card" data-map-card hidden></div>
@@ -79,7 +85,7 @@
   <ol class="diagram" aria-label="Stations, newest first">
     <li class="diagram__row diagram__row--now{% for l in lines %} on-{{ l.id }}{% endfor %}">
       {%- for l in lines %}<span class="diagram__cell c-{{ l.id }}" aria-hidden="true"><span class="diagram__dot"></span></span>{% endfor %}
-      <span class="diagram__text"><a class="diagram__title" href="/now/">Now</a><span class="mono muted">all lines</span></span>
+      <span class="diagram__text"><a class="diagram__title" href="{{ endUrl }}">{{ endLabel }}</a><span class="mono muted">{{ end.note if end and end.note else "all lines" }}</span></span>
     </li>
     {%- for s in stations %}
     <li class="diagram__row{% if loop.index > 12 %} is-more{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
