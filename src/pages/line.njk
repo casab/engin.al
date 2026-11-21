@@ -46,7 +46,7 @@ eleventyComputed:
           <ol class="stops">
         {%- for s in items %}
         <li class="stop{% if s.lines.length > 1 %} stop--x{% endif %}" id="{{ s.id | slugify }}">
-          <span class="stop__when">{{ s.date | date("month") }}</span>
+          <span class="stop__when">{{ s.range.split(" – ")[0] if s.range else (s.date | date("month")) }}</span>
           <span class="stop__rail" aria-hidden="true"><span class="stop__dot"></span></span>
           <div class="stop__body">
             <div class="stop__title">

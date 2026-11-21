@@ -1,6 +1,9 @@
 ---
-title: "[Started backend work at Digital Loop]"
-date: 2022-01-01
+title: "Digital Loop"
+date: 2025-05-01
+end: present
+role: "Senior backend engineer"
 lines: [code]
-draft: true  # example milestone: fix the title and date, then untick Draft
+url: https://digital-loop.com
+note: "A multi-tenant SEO content platform: LLM writing pipelines, retrieval on AWS Bedrock, and the integrations around them."
 ---

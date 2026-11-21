@@ -134,7 +134,7 @@ collections:
     label: Milestones
     label_singular: Milestone
     description: >-
-      Stations that need no page of their own: a degree, a gig without a recording, a first race, a new job.
+      Stations that need no page of their own: a gig without a recording, a first race, and periods (a job, a degree) with an end date.
       They appear on the map and on their line's page.
     folder: src/stops
     media_folder: ""
@@ -148,6 +148,9 @@ collections:
       - { name: title, label: Title, widget: string }
       - { name: short, label: Map label, widget: string, required: false }
       - { name: date, label: Date, widget: datetime, time_format: false, date_format: "YYYY-MM-DD", format: "YYYY-MM-DD" }
+      - { name: end, label: Until, widget: string, required: false, hint: "Jobs and degrees: the end date (YYYY-MM-DD), or present while it runs. Turns the milestone into a period: a bar on the map's time strip, and a range in the lists" }
+      - { name: when, label: Shown as, widget: string, required: false, hint: "Periods known only to the year: the range to show (e.g. 2012 – 2017); Date and Until then only place it" }
+      - { name: role, label: Role, widget: string, required: false, hint: "Periods: the job title or the school" }
       - name: lines
         label: Lines
         widget: select
