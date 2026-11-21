@@ -42,6 +42,15 @@
     <span class="filter__hint mono muted">time runs left to right · {{ net.stations.length }} stations</span>
   </fieldset>
 
+  {#- Year jumps for the map: shown by map.js (they scroll the map), hidden without JS #}
+  <div class="timeline" data-timeline hidden>
+    <span class="label">Jump to</span>
+    <ol>
+      {%- for y in net.years %}<li><button type="button" data-map-year="{{ y.label }}">{{ y.label }}</button></li>{% endfor %}
+      <li><button type="button" data-map-year="now">Now</button></li>
+    </ol>
+  </div>
+
   <div class="map{% if net.width > 1400 %} is-wide{% endif %}">
     <svg viewBox="0 0 {{ net.width }} {{ net.height }}" width="{{ net.width }}" height="{{ net.height }}" role="img" aria-labelledby="map-desc">
       <desc id="map-desc">A transit map of {{ net.stations.length }} projects, recordings, milestones and races on four lines: {% for l in lines %}{{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}. The same stations are listed below the map on small screens and on each line's page.</desc>
@@ -51,11 +60,11 @@
       <g class="ln c-{{ p.id }}"><path pathLength="1" d="{{ p.d }}"/></g>
       {%- endfor %}
       {%- for s in net.stations %}
-      <g class="st{% if s.interchange %} st--x{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
-        {%- if s.url %}<a href="{{ s.url }}">{% endif %}
-        {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/>{% endif %}
+      <g class="st{% if s.interchange %} st--x{% endif %}{% if s.minor %} st--minor{% endif %}{% if s.draft %} st--draft{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}" data-st="{{ loop.index0 }}" data-year="{{ s.year }}">
+        {%- if s.url %}<a href="{{ s.url }}" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% else %}<g class="st__plain" role="img" aria-label="{{ s.title }}, {{ s.date | date('month') }}">{% endif %}
+        {%- if s.pill %}<rect x="{{ s.pill.x }}" y="{{ s.pill.y }}" width="{{ s.pill.w }}" height="{{ s.pill.h }}" rx="12"/>{% else %}<circle cx="{{ s.x }}" cy="{{ s.y }}" r="7"/><circle class="hit" cx="{{ s.x }}" cy="{{ s.y }}" r="18"/>{% endif %}
         <text x="{{ s.label.x }}" y="{{ s.label.y }}" text-anchor="middle">{{ s.text }}</text>
-        {%- if s.url %}</a>{% endif %}
+        {%- if s.url %}</a>{% else %}</g>{% endif %}
       </g>
       {%- endfor %}
       <g class="hub">
@@ -64,6 +73,8 @@
       </g>
     </svg>
   </div>
+  <div class="map-card" data-map-card hidden></div>
+  <script type="application/json" data-map-data>{{ net.stations | mapCards(lines) | json | safe }}</script>
 
   <ol class="diagram" aria-label="Stations, newest first">
     <li class="diagram__row diagram__row--now{% for l in lines %} on-{{ l.id }}{% endfor %}">

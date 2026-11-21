@@ -251,7 +251,28 @@
   @media (min-width: 40rem) { .intro { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   /* the map */
-  .network { border-top: 1px solid var(--ink); padding-top: 0.6rem; }
+  .network { position: relative; border-top: 1px solid var(--ink); padding-top: 0.6rem; }
+  /* year jumps (map.js) */
+  .timeline { display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0; }
+  .timeline[hidden] { display: none; }
+  .timeline ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.15rem; }
+  .timeline button { min-height: 2.75rem; padding: 0 0.6rem; border-radius: 999px; font-family: var(--sans); font-stretch: 62%; font-weight: 850; font-size: 1.15rem; }
+  .timeline button:hover { background: var(--paper-2); }
+  .timeline button.is-current { background: var(--ink); color: var(--paper); }
+  /* station card (map.js): positioned with --x / --y */
+  .map-card { position: absolute; z-index: 6; left: 0; top: 0; transform: translate(var(--x, 0), var(--y, 0)); width: min(20rem, calc(100% - 1rem)); background: var(--white); border: 1px solid var(--ink); box-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.5); padding: 0.9rem 1rem; display: grid; gap: 0.4rem; }
+  .map-card[hidden] { display: none; }
+  .map-card__title { font-stretch: 85%; font-weight: 750; font-size: 1.2rem; line-height: 1.15; }
+  .map-card__sum { font-size: 0.88rem; color: var(--ink-2); line-height: 1.45; }
+  .map-card .cta { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .map.is-pannable { cursor: grab; }
+  .map.is-dragging { cursor: grabbing; user-select: none; }
+  .map.is-dragging a { pointer-events: none; }
+  .map .st .hit { fill: transparent; stroke: none; }
+  .map .st--minor text { opacity: 0; transition: opacity 0.15s; }
+  .map .st:hover text, .map .st:focus-within text { opacity: 1; }
+  .map .st .st__plain { cursor: pointer; outline: none; }
+  .map .st .st__plain:focus-visible circle:not(.hit), .map .st .st__plain:focus-visible rect { stroke: var(--l-code); stroke-width: 4; }
   .filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.75rem; border: 0; padding: 0; }
   .filter input { position: absolute; opacity: 0; pointer-events: none; }
   .filter label { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 2.75rem; cursor: pointer; font-stretch: 125%; font-weight: 650; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 3px solid transparent; }
@@ -295,7 +316,7 @@
   .diagram__all-input:focus-visible + .diagram__all { outline: 2px solid var(--l-code); outline-offset: 2px; }
   .diagram__all .when-open, .network:has(#d-all:checked) .diagram__all .when-closed { display: none; }
   .network:has(#d-all:checked) .diagram__all .when-open { display: inline; }
-  @media (max-width: 55.99rem) { .diagram__all { display: inline-flex; } }
+  @media (max-width: 39.99rem) { .diagram__all { display: inline-flex; } }
   .network:has(.filter input:not(#f-all):checked) .diagram__all { display: none; }
   .network:has(#f-code:checked) .diagram__row:not(.on-code),
   .network:has(#f-circuits:checked) .diagram__row:not(.on-circuits),
@@ -312,8 +333,8 @@
   .diagram__title { font-stretch: 85%; font-weight: 750; font-size: 1.05rem; line-height: 1.2; text-decoration: none; }
   a.diagram__title::after { content: ""; position: absolute; inset: 0; }
   .diagram__row--now .diagram__dot { background: var(--ink); }
-  @media (min-width: 56rem) { .network .diagram { display: none; } }
-  @media (max-width: 55.99rem) { .network .map { display: none; } .filter__hint { display: none; } }
+  @media (min-width: 40rem) { .network .diagram { display: none; } .network .diagram__all { display: none; } }
+  @media (max-width: 39.99rem) { .network .map, .network .timeline { display: none; } .filter__hint { display: none; } }
 
   /* line indexes on the home page */
   .lines-index { display: grid; gap: 2.5rem 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }

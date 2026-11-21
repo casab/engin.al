@@ -70,6 +70,7 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/_includes/macros.njk` | `network` (map + phone diagram + filter), `board`, `player`, `tags` |
 | `src/assets/css/site.css` | the whole design system (layers, tokens) |
 | `src/assets/js/site.js` | click-to-load players, split-flap flip, `#f-<line>` filter hash. Everything works without it |
+| `src/assets/js/map.js` | the explorable map (pan, timeline, keyboard, station cards); imported by `site.js` |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
 | `scripts/` | `check.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
 
@@ -83,8 +84,19 @@ shows it.
 One column per station ordered by date (nothing collides however dates bunch up), a fixed lane per line,
 interchanges bend the non-first lines over at 45° to run beside the first, all lines end at the "Now"
 terminus. Output is plain SVG; the line filter is CSS `:has()` on radio inputs. A wide map opens scrolled to
-the right end (`direction: rtl` trick) with a fade on the left. Phones (< 56rem) get the same stations as a
-vertical line diagram. Long titles need a `short` label or they collide.
+the right end (`direction: rtl` trick) with a fade on the left. Phones (< 40rem) get the same stations as a
+vertical line diagram; tablets and up get the map. Long titles need a `short` label or they collide.
+
+- **Density:** consecutive plain single-line stations sit `TIGHT` (90 px) apart; interchanges keep the wide
+  column for their bends. Labels take one of two tiers; a label that would need a third is `minor` (hidden
+  until hover/focus, still in the card). Interchanges, projects and recordings always keep their label.
+- **`src/assets/js/map.js`** (loaded by `site.js` only where a map is drawn): drag to pan with the mouse,
+  ←/→/Home/End between stations, a **timeline** ("Jump to" one button per year + Now; highlights the year in
+  view; hidden without JS) and a **station card** (hover, keyboard focus, or the first tap on touch; the
+  second tap follows the link; Escape closes). Card data is a `<script type="application/json"
+  data-map-data>` block built by the `mapCards` filter, indexed by `data-st`. The card is positioned with
+  `style.setProperty("--x"/"--y")` (CSSOM is fine under the CSP; `style=""` attributes are not).
+- In the rtl scroller `scrollLeft` is 0 at the right end and negative further left.
 
 ## Phones
 
@@ -170,7 +182,8 @@ vertical line diagram. Long titles need a `short` label or they collide.
 ## Gotchas
 
 - `npm run build:deploy` deletes `_site`, which breaks a running `npm run serve`: restart the dev server.
-  The dev server also caches `_data` (new Strava routes didn't show until a restart).
+  The dev server also caches `_data` (new Strava routes didn't show until a restart) and doesn't always pick up
+  changes to filters in `eleventy.config.js`: restart it.
 - Git Bash on Windows rewrites arguments that start with `/` into Windows paths: use `MSYS_NO_PATHCONV=1`.
 - Full-size screenshots: headless Edge (`msedge --headless=new --screenshot --window-size=1440,2000`) with
   a fresh `--user-data-dir` per run (a reused profile silently produces nothing). Its minimum window width is
