@@ -48,6 +48,7 @@ npm run serve          # dev server :8080, shows drafts (marked)
 npm run build:deploy   # clean build (hashes asset names) + scripts/check.mjs --ci (what Workers Builds runs)
 npm run check          # links, alt text, no inline style/script (CSP), no demo Strava data in CI
 npm run strava:sync    # pull Strava → src/_data/strava (needs .env), then commit the result
+npm run strava:rename  # dry run of scripts/strava-renames.json; `-- --apply` renames on Strava (one-time write auth)
 npm run strava:demo    # fake races for layout work; `node scripts/strava-demo.mjs --clear` before committing
 npm run r2:media       # upload images to R2 with your wrangler login (no keys); `-- --prune` to drop local copies
 npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
@@ -238,8 +239,18 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Daily GitHub Action commits changes to `main`, which triggers the Cloudflare build. Repo secrets:
   `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN`, `GH_SECRETS_TOKEN` (stores a rotated
   refresh token).
-- Many activities still have Strava's default names ("Morning Run"); rename or hide them via
-  `src/distance/<id>.md` in the content review.
+- **Names live on Strava** (Engin, 2026-11-21: "update Strava directly"): fix a name on Strava, not with a
+  `title` in `src/distance/<id>.md`, and the sync brings it here. `scripts/strava-renames.json` holds
+  researched race names (`<race's own name> <year>`, English where the race has an English name, Turkish
+  where it only has one; `race: true` also sets Strava's Race workout type). `npm run strava:rename -- --apply`
+  (Engin runs it) asks for `activity:write` once, keeps that token in memory only, renames, and mirrors the
+  names into `activities.json`. Research: the route's coordinates + date → the organiser's site, ahotu, ITRA,
+  sporbilet, local news. Karşıyaka (≈38.45, 27.10) hosts the Atadan Anaya and Zübeyde Hanım runs.
+- Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop), the
+  "Delphi ride" days (2018-06-21…23, Cologne area → Eifel → Luxembourg), and the 10 km on 2024-05-18. Many
+  other activities keep Strava's default names ("Morning Run").
+- The 2018 activities from April to September are on Strava twice (the `12946…` ids are a later re-import,
+  e.g. "Morning Run" next to "İzmir 9th September Half Marathon"); hide the copies with `hidden: true`.
 
 ## Cloudflare
 

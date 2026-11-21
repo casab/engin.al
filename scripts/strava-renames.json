@@ -1,0 +1,24 @@
+{
+  "_about": "Race names researched by date and place (see CLAUDE.md, Strava sync). `npm run strava:rename` prints the changes; `-- --apply` writes them to Strava. race: true also sets Strava's Race workout type.",
+  "renames": [
+    { "id": 18447876941, "date": "2026-05-10", "name": "Salomon Çeşme Half Marathon 2026", "race": true },
+    { "id": 14442558520, "date": "2025-05-11", "name": "Salomon Çeşme Half Marathon 2025" },
+    { "id": 12754483642, "date": "2024-10-27", "name": "Gökova Half Marathon 2024", "race": true },
+    { "id": 11327412284, "date": "2024-05-04", "name": "Salomon Çeşme Half Marathon 2024" },
+    { "id": 4018596676, "date": "2020-09-06", "name": "9 Eylül İzmir Half Marathon 2020" },
+    { "id": 2690767586, "date": "2019-09-08", "name": "9 Eylül İzmir Half Marathon 2019" },
+    { "id": 2670065804, "date": "2019-08-31", "name": "Runfire Salt Lake 20K 2019" },
+    { "id": 2379007865, "date": "2019-05-19", "name": "19 Mayıs 10K Yol Koşusu 2019" },
+    { "id": 2360622978, "date": "2019-05-12", "name": "Zübeyde Hanım Koşusu 2019" },
+    { "id": 2344376712, "date": "2019-05-05", "name": "Wings for Life World Run 2019, İzmir" },
+    { "id": 2324914239, "date": "2019-04-28", "name": "Global Bodrum Run 2019" },
+    { "id": 2289670273, "date": "2019-04-14", "name": "Paris Marathon 2019" },
+    { "id": 2187613281, "date": "2019-03-03", "name": "Runatolia Half Marathon 2019" },
+    { "id": 1958533251, "date": "2018-11-11", "name": "Vodafone Istanbul Marathon 2018" },
+    { "id": 1946096854, "date": "2018-11-04", "name": "Atadan Anaya Saygı Koşusu 2018" },
+    { "id": 1934200241, "date": "2018-10-28", "name": "Dalyan Caretta Run Half Marathon 2018" },
+    { "id": 1918225871, "date": "2018-10-21", "name": "EÇEV Eğitime Pedalla Bisiklet Turu 2018" },
+    { "id": 1889086727, "date": "2018-10-07", "name": "Bodrum Half Marathon 2018" },
+    { "id": 1813356268, "date": "2018-09-02", "name": "9 Eylül İzmir Half Marathon 2018" }
+  ]
+}
