@@ -8,6 +8,7 @@ venue: "Tyke Vegan Cafe, İzmir"
 length: "49:08"
 summary: "My DJ set at Sanatorium for the Sane, the second Rehab night of Uncivilization."
 embed_url: "https://soundcloud.com/uncvl/balgum-rehab2"
+tracklist_url: "https://soundcloud.com/balgum/sets/uncivilizaton-tyke"
 links:
   - label: Event
     url: https://uncvl.xyz/events/art-rehab-2-sanatorium-for-the-sane/
