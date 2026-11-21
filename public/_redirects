@@ -9,3 +9,7 @@
 
 # Round-one pages that became line pages
 /projects/                           /                                    301
+
+# Sound entries that turned out not to be recordings of my set (now milestones on the Sound line)
+/sound/balgum-uncivilized-nomads-36/ /sound/                         301
+/sound/synth-sessions-2-live/        /sound/                         301

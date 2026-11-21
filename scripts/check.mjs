@@ -4,6 +4,7 @@
 //  - every <img> has an alt attribute
 //  - no inline <script> code or style="" attributes (they would break the strict CSP)
 //  - every page has a share card in _site/og/ (scripts/og.mjs)
+//  - no SoundCloud playlist as a recording's player (src/sound)
 //  - no demo Strava data in CI (CI env var or --ci, used by the Cloudflare build)
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -70,6 +71,16 @@ for await (const file of walk(path.join(ROOT, "assets"))) {
   for (const m of text.matchAll(/(?:import\(|from\s+)["'](\.\/[^"']+)["']/g)) {
     if (!(await resolves(path.posix.join(path.posix.dirname(rel), m[1])))) errors.push(`${rel}: broken import ${m[1]}`);
   }
+}
+
+// a recording's player plays that recording: a SoundCloud playlist (/sets/) is a tracklist or a whole night of
+// other people's sets, so it belongs under links (releases may be playlists: an EP)
+for (const dir of await readdir("src/sound", { withFileTypes: true })) {
+  if (!dir.isDirectory()) continue;
+  const md = await readFile(path.join("src/sound", dir.name, "index.md"), "utf8").catch(() => "");
+  const embed = md.match(/^embed_url:\s*"?([^"\n]+)/m)?.[1] || "";
+  const kind = md.match(/^kind:\s*"?([^"\n]+)/m)?.[1] || "";
+  if (/soundcloud\.com\/[^/]+\/sets\//.test(embed) && kind !== "release") errors.push(`src/sound/${dir.name}: embed_url is a SoundCloud playlist (${embed}), not the recording`);
 }
 
 // demo Strava data (scripts/strava-demo.mjs) must never reach production

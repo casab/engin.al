@@ -60,7 +60,7 @@ npx wrangler dev --port 8787     # serve the production _site with _headers (lau
 |---|---|
 | `src/projects/<slug>/index.md` | project: `lines` (first sets the colour), `short` map label, `status`, `stack`, `summary`, `links`, `cover`, `featured`, `draft` |
 | `src/sound/<slug>/index.md` | recording: `artist` (Balgum/Senst), `kind` (dj set, live set, dj mix, track, release, session), `venue`, `length`, `embed_url`, `links`; Sound line unless `lines` says otherwise |
-| `src/stops/*.md` | milestones without a page (gigs, degree, jobs): `title`, `short`, `date`, `lines`, `url`, `note`. `permalink: false` |
+| `src/stops/*.md` | milestones without a page (gigs without a recording, degree, jobs): `title`, `short`, `date`, `lines`, `artist` + `kind` (gigs: dj set, live set), `url`, `note`. `permalink: false` |
 | `src/distance/<strava-id>.md` | notes on Strava activities: `title`, `show`, `hidden`, `photo`, body. Never pages |
 | `src/notes/*.md` | occasional write-ups; not on the map, not in the menu |
 | `src/_data/site.json` | the four lines (id, code, label, colour, description, url), menu, home intro, socials, `aliases` (Balgum, Senst), `strava_url` |
@@ -198,7 +198,17 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - **Balgum gigs:** uncvl.xyz event data (`origin/main` of the uncvl repo, `lineup` with `act_type`,
   `duration`); event URLs are `/events/<folder without date>/`.
 - **Recordings:** SoundCloud `balgum` (user id 4014191). The RSS feed only has one item; the profile HTML
-  (`/balgum/tracks`, `/sets`) lists everything, track pages carry `<time pubdate>` and duration.
+  (`/balgum/tracks`, `/sets`) lists everything, track pages carry `<time pubdate>` and duration. Each page's
+  `window.__sc_hydration` JSON has `kind` (track/playlist), the full title, description (tracklists) and a
+  playlist's tracks with their uploaders. Engin's titles follow `Balgum - <event> - DD.MM.YYYY@(<venue>) {Set}`.
+  Uncivilization Records (`uncvl`) uploads single-set tracks (`/uncvl/balgum-rehab2`, …) and one playlist per night.
+- **Gig vs recording (matching rule, 2026-11-21):** a gig is a recording page under `src/sound/` only when a
+  recording of *Engin's own set* exists, and `embed_url` is that single track. Otherwise it's a milestone in
+  `src/stops/` with `artist` and `kind`. Never embed a SoundCloud playlist: `/balgum/sets/…` is a tracklist of
+  other artists' tracks (the Nomads 36 one is), and `/uncvl/sets/…` is the whole night (Synth & Punk only holds
+  Ox's set). The night's playlist goes under `links` ("The whole night"). `check.mjs` fails on a `/sets/`
+  `embed_url` unless `kind: release`. Titles use the event's own name from uncvl (`title`, or `codename` when
+  the title is a lineup); `act_type` gives dj set / live set.
 - **Senst:** production alias; Spotify artist `266Jp19qo5Tb7hKkj9y2yy`, single "Confusion" (2020-02-29).
 - **Projects:** GitHub (`gh`), READMEs, commit history, releases, the products' sites. Private repos get no
   repo link. Don't add repos Engin has no own commits in, or Epic Games / employer material.
@@ -267,6 +277,9 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
 - Still drafts: five placeholder milestones (`[Electronics engineering degree]`, `[Machine learning work]`,
   `[Started backend work at Digital Loop]`, `[Guitar, first band]`, `[First half marathon]`) and one
-  SoundCloud track Engin hasn't decided on. Possibility, Death and Freedom have no `artist` yet.
+  SoundCloud track Engin hasn't decided on. Possibility, Death, Freedom and Confusion Raw have no `artist` yet
+  (all uploaded on the Balgum SoundCloud, but so was the Senst single).
+- No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; only a tracklist playlist) or Synth
+  Sessions #2 (Engin's live set); when one appears, move the milestone to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
 - `LICENSE` still carries AstroPaper's copyright line.

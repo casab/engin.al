@@ -113,7 +113,7 @@ collections:
           - { label: "L4 Distance", value: distance }
       - { name: venue, label: Where, widget: string, required: false }
       - { name: summary, label: Summary, widget: text, required: false }
-      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "SoundCloud, Spotify, Mixcloud, YouTube or Bandcamp URL. Shown as a click-to-load player." }
+      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "The recording of this set or track itself (one SoundCloud track, Spotify, Mixcloud, YouTube or Bandcamp), shown as a click-to-load player. Not a SoundCloud playlist (/sets/): put a tracklist or a whole night's recordings under Links. A gig with no recording of your own set belongs in Milestones." }
       - { name: bandcamp_id, label: Bandcamp album/track id, widget: string, required: false, hint: "Bandcamp players need the numeric id (Share → Embed)." }
       - { name: gear, label: Gear used, widget: list, required: false }
       - name: links
@@ -133,7 +133,7 @@ collections:
     label: Milestones
     label_singular: Milestone
     description: >-
-      Stations that need no page of their own: a degree, a first gig, a first race, a new job.
+      Stations that need no page of their own: a degree, a gig without a recording, a first race, a new job.
       They appear on the map and on their line's page.
     folder: src/stops
     media_folder: ""
@@ -157,6 +157,8 @@ collections:
           - { label: "L2 Circuits", value: circuits }
           - { label: "L3 Sound", value: sound }
           - { label: "L4 Distance", value: distance }
+      - { name: artist, label: As, widget: select, options: [Balgum, Senst], required: false, hint: "Gigs only: the name on the bill" }
+      - { name: kind, label: Kind, widget: select, options: [dj set, live set], required: false, hint: "Gigs only. A gig with a recording of your set goes under Sound instead" }
       - { name: url, label: Link, widget: string, required: false, hint: "Optional: where the station links to" }
       - { name: note, label: Note, widget: text, required: false }
       - { name: draft, label: Draft, widget: boolean, default: false }
