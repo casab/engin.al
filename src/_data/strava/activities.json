@@ -561,19 +561,6 @@
    "has_route": true
   },
   {
-   "id": 12946820886,
-   "name": "Morning Run",
-   "sport": "run",
-   "sport_type": "Run",
-   "date": "2018-09-02T08:04:27Z",
-   "distance_m": 21245,
-   "moving_s": 7181,
-   "elapsed_s": 7662,
-   "elev_m": 23,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1813356268,
    "name": "9 Eylül İzmir Half Marathon 2018",
    "sport": "run",
@@ -587,19 +574,6 @@
    "has_route": true
   },
   {
-   "id": 12946821605,
-   "name": "Evening Run",
-   "sport": "run",
-   "sport_type": "Run",
-   "date": "2018-08-27T20:28:04Z",
-   "distance_m": 10010,
-   "moving_s": 2974,
-   "elapsed_s": 2974,
-   "elev_m": 82,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1801363385,
    "name": "Evening Run",
    "sport": "run",
@@ -609,19 +583,6 @@
    "moving_s": 2978,
    "elapsed_s": 2979,
    "elev_m": 118,
-   "race": false,
-   "has_route": true
-  },
-  {
-   "id": 12946820327,
-   "name": "Evening Run",
-   "sport": "run",
-   "sport_type": "Run",
-   "date": "2018-08-20T20:09:32Z",
-   "distance_m": 18039,
-   "moving_s": 6673,
-   "elapsed_s": 6691,
-   "elev_m": 155,
    "race": false,
    "has_route": true
   },
@@ -639,19 +600,6 @@
    "has_route": true
   },
   {
-   "id": 12946820616,
-   "name": "Night Run",
-   "sport": "run",
-   "sport_type": "Run",
-   "date": "2018-08-13T21:10:03Z",
-   "distance_m": 16039,
-   "moving_s": 5897,
-   "elapsed_s": 5936,
-   "elev_m": 137,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1770028633,
    "name": "Night Run",
    "sport": "run",
@@ -661,19 +609,6 @@
    "moving_s": 5931,
    "elapsed_s": 5948,
    "elev_m": 113,
-   "race": false,
-   "has_route": true
-  },
-  {
-   "id": 12946820021,
-   "name": "Evening Run",
-   "sport": "run",
-   "sport_type": "Run",
-   "date": "2018-08-01T18:13:58Z",
-   "distance_m": 10027,
-   "moving_s": 3460,
-   "elapsed_s": 3460,
-   "elev_m": 84,
    "race": false,
    "has_route": true
   },
@@ -691,19 +626,6 @@
    "has_route": true
   },
   {
-   "id": 12946823093,
-   "name": "Morning Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-06-23T07:48:47Z",
-   "distance_m": 82734,
-   "moving_s": 15985,
-   "elapsed_s": 22411,
-   "elev_m": 1328,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1657458808,
    "name": "Delphi ride day 3",
    "sport": "ride",
@@ -714,19 +636,6 @@
    "elapsed_s": 22439,
    "elev_m": 1496,
    "race": true,
-   "has_route": true
-  },
-  {
-   "id": 12946827320,
-   "name": "Morning Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-06-22T08:41:08Z",
-   "distance_m": 150910,
-   "moving_s": 25940,
-   "elapsed_s": 34737,
-   "elev_m": 1175,
-   "race": false,
    "has_route": true
   },
   {
@@ -752,19 +661,6 @@
    "moving_s": 19937,
    "elapsed_s": 23805,
    "elev_m": 663,
-   "race": false,
-   "has_route": true
-  },
-  {
-   "id": 12946823293,
-   "name": "Morning Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-06-21T09:05:29Z",
-   "distance_m": 95056,
-   "moving_s": 16821,
-   "elapsed_s": 24475,
-   "elev_m": 379,
    "race": false,
    "has_route": true
   },
@@ -795,19 +691,6 @@
    "has_route": true
   },
   {
-   "id": 12946820447,
-   "name": "Evening Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-06-07T20:31:00Z",
-   "distance_m": 20519,
-   "moving_s": 3259,
-   "elapsed_s": 3509,
-   "elev_m": 25,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1623607131,
    "name": "Evening Ride",
    "sport": "ride",
@@ -821,19 +704,6 @@
    "has_route": true
   },
   {
-   "id": 12946821375,
-   "name": "Evening Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-05-19T19:56:00Z",
-   "distance_m": 47239,
-   "moving_s": 10250,
-   "elapsed_s": 11652,
-   "elev_m": 166,
-   "race": false,
-   "has_route": true
-  },
-  {
    "id": 1582743671,
    "name": "Evening Ride",
    "sport": "ride",
@@ -843,19 +713,6 @@
    "moving_s": 8952,
    "elapsed_s": 11753,
    "elev_m": 401,
-   "race": false,
-   "has_route": true
-  },
-  {
-   "id": 12946785654,
-   "name": "Morning Ride",
-   "sport": "ride",
-   "sport_type": "Ride",
-   "date": "2018-04-14T10:24:33Z",
-   "distance_m": 69710,
-   "moving_s": 11349,
-   "elapsed_s": 16610,
-   "elev_m": 373,
    "race": false,
    "has_route": true
   },

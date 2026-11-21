@@ -18,7 +18,7 @@
 //
 // Which activities are shown: races, runs of at least STRAVA_RUN_MIN_KM, rides of at least STRAVA_RIDE_MIN_KM
 // (not virtual), plus anything with `show: true` in src/distance/<id>.md. `hidden: true` there removes one.
-// Everything else only feeds the weekly totals. The token uses the `activity:read` scope, so Strava itself
+// Everything else only feeds the weekly totals. Duplicate uploads (same sport and start minute) count once. The token uses the `activity:read` scope, so Strava itself
 // leaves out "Only you" activities and privacy-zone data; the trim and zones here are a second layer.
 
 import { readFile, writeFile, readdir, mkdir, unlink } from "node:fs/promises";
@@ -98,6 +98,19 @@ export function prepareRoute(latlng, alt) {
     latlng: idx.map((i) => r.latlng[i].map((v) => Math.round(v * 1e5) / 1e5)),
     alt: r.alt && r.alt.length === r.latlng.length ? idx.map((i) => Math.round(r.alt[i])) : undefined,
   };
+}
+
+// ---------------------------------------------------------------- duplicates
+// The same activity uploaded twice (a later re-import, a second upload of the file): same sport, same start
+// minute. The older upload (lower id) stays; the copy feeds neither the list nor the weekly totals.
+export function dropDuplicates(list) {
+  const first = new Map();
+  for (const a of [...list].sort((x, y) => x.id - y.id)) {
+    const key = `${sportOf(a)}|${String(a.start_date).slice(0, 16)}`;
+    if (!first.has(key)) first.set(key, a.id);
+  }
+  const keep = new Set(first.values());
+  return list.filter((a) => keep.has(a.id));
 }
 
 // ---------------------------------------------------------------- weekly totals
@@ -182,12 +195,13 @@ async function main() {
   const access = await token();
   const overrides = await readOverrides();
 
-  const all = [];
+  const uploaded = [];
   for (let page = 1; ; page++) {
     const batch = await get(access, `/athlete/activities?per_page=200&page=${page}`);
-    all.push(...batch);
+    uploaded.push(...batch);
     if (batch.length < 200) break;
   }
+  const all = dropDuplicates(uploaded);
 
   const shown = all.filter((a) => {
     const sport = sportOf(a), o = overrides.get(String(a.id));
@@ -246,7 +260,7 @@ async function main() {
   try { prev = JSON.parse(await readFile(file, "utf8")); } catch {}
   const same = prev && JSON.stringify({ ...prev, synced_at: 0 }) === JSON.stringify({ ...data, synced_at: 0 });
   if (!same) await writeFile(file, JSON.stringify(data, null, 1) + "\n");
-  console.log(`[strava] ${all.length} activities, ${activities.length} shown, ${keepIds.size} routes, ${calls} API calls${same ? ", no changes" : ""}`);
+  console.log(`[strava] ${all.length} activities (${uploaded.length - all.length} duplicates dropped), ${activities.length} shown, ${keepIds.size} routes, ${calls} API calls${same ? ", no changes" : ""}`);
   if (pending) console.log(`[strava] ${pending} route(s) not downloaded yet (limit ${MAX_ROUTES} per sync${limited ? ", hit Strava's rate limit" : ""}); the next sync continues.`);
 }
 
