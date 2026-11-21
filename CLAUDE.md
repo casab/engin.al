@@ -215,7 +215,14 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - `check.mjs` fails on a `/sets/` `embed_url` (unless `kind: release`) and on a non-draft `src/sound/` entry
   with neither field. Titles use the event's own name from uncvl (`title`, or `codename` when the title is a
   lineup); `act_type` gives dj set / live set.
-- **Senst:** production alias; Spotify artist `266Jp19qo5Tb7hKkj9y2yy`, single "Confusion" (2020-02-29).
+- **Balgum and Senst** are both producer and DJ names, split by genre (Engin, 2026-11-21): **Balgum** for
+  techno, drum and bass, hardcore and the like (Death, Possibility); **Senst** for house, electronica and
+  downtempo (Confusion, Freedom). Everything is uploaded on the `balgum` SoundCloud, so the uploader
+  doesn't tell you the name: go by genre, and ask when unclear.
+- **Senst:** Spotify artist `266Jp19qo5Tb7hKkj9y2yy`, single "Confusion" (2020-02-29).
+- **Rig** (`rig.json`, Engin, 2026-11-21): Yamaha Pacifica 611HFM, Yamaha DTX6K3-X (its module is the DTX-PRO,
+  hence the dtx-choke project's wording), M-Audio Keystation 61, Novation Circuit Tracks / Circuit Rhythm /
+  Mono Station, Arturia MicroFreak, Empress Audio ZOIA, Ableton Live 12, Denon Prime Go.
 - **Projects:** GitHub (`gh`), READMEs, commit history, releases, the products' sites. Private repos get no
   repo link. Don't add repos Engin has no own commits in, or Epic Games / employer material.
 - **Distance:** Strava athlete 29741063, synced by `scripts/strava-sync.mjs`.
@@ -283,8 +290,7 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Content review of everything (Engin: "some data are wrong"): projects, recordings, gigs, Strava names.
 - Still drafts: five placeholder milestones (`[Electronics engineering degree]`, `[Machine learning work]`,
   `[Started backend work at Digital Loop]`, `[Guitar, first band]`, `[First half marathon]`) and one
-  SoundCloud track Engin hasn't decided on. Possibility, Death, Freedom and Confusion Raw have no `artist` yet
-  (all uploaded on the Balgum SoundCloud, but so was the Senst single).
+  SoundCloud track Engin hasn't decided on.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
   Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
