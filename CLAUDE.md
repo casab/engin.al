@@ -86,6 +86,18 @@ terminus. Output is plain SVG; the line filter is CSS `:has()` on radio inputs. 
 the right end (`direction: rtl` trick) with a fade on the left. Phones (< 56rem) get the same stations as a
 vertical line diagram. Long titles need a `short` label or they collide.
 
+## Phones
+
+- Below 44rem the header nav becomes a **Menu** button: a `<details>` sheet (`[data-menu]` in `base.njk`)
+  with the four lines and their station counts, then Now / Network info / The map. Works without JS;
+  `site.js` adds Escape, focus in/out and closing on link clicks. `html:has(.menu[open])` locks scrolling.
+- The home page reorders on phones with flex `order` (`.home` wrapper): hero → departures board → the
+  line diagram → line indexes (3 stations each) → featured interchange → network information.
+- The phone line diagram shows the **newest 12** stations; a CSS-only checkbox (`#d-all`) shows the rest,
+  and choosing a line filter shows every station of that line. When adding filter rules, the reveal rules
+  are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
+- Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
+
 ## Design rules
 
 - Paper `#EDEDE8`, ink `#121212`, one font family **Archivo** (variable width: 62% display caps, 125% wide

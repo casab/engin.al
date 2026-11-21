@@ -45,3 +45,18 @@ if (!reduce && "IntersectionObserver" in window) {
   }, { threshold: 0.6 });
   document.querySelectorAll("[data-flap]").forEach((b) => io.observe(b));
 }
+
+// ---- phone menu (a <details> sheet): Escape closes it, focus moves in and back out ----
+const menu = document.querySelector("[data-menu]");
+if (menu) {
+  const button = menu.querySelector("summary");
+  menu.addEventListener("toggle", () => {
+    if (menu.open) menu.querySelector(".menu__sheet a")?.focus();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu.open) { menu.open = false; button.focus(); }
+  });
+  // a link to the page you're on (or an anchor) shouldn't leave the sheet covering it
+  menu.addEventListener("click", (e) => { if (e.target.closest(".menu__sheet a")) menu.open = false; });
+  matchMedia("(min-width: 44rem)").addEventListener("change", (e) => { if (e.matches) menu.open = false; });
+}
