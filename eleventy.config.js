@@ -181,14 +181,20 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("bundle", bundlePath);
 
   // ---- distance: Strava cache (scripts/strava-sync.mjs); routes/<id>.json hold trimmed, simplified tracks ----
-  eleventyConfig.addFilter("route", (id, strava) => {
+  // "thumb": small, coarse geometry for lists (the Distance page has dozens of routes)
+  eleventyConfig.addFilter("route", (id, strava, size) => {
     const r = strava && strava.routes && strava.routes[String(id)];
-    return r ? routeGeometry(r) : null;
+    if (!r) return null;
+    return size === "thumb" ? routeGeometry(r, { w: 200, h: 150, pad: 6, elevH: 30, maxPoints: 80, elevPoints: 48, round: 0 }) : routeGeometry(r);
   });
   eleventyConfig.addFilter("weeklyTrace", (weeks, opts) => weeklyTrace(weeks, opts));
   eleventyConfig.addFilter("weeklyYears", (weekly) => Object.keys(weekly || {}).sort().reverse());
-  eleventyConfig.addFilter("weeklyMax", (weekly) =>
-    Math.max(1, ...Object.values(weekly || {}).flatMap((y) => [...(y.run || []), ...(y.ride || [])])));
+  // shared vertical scale for the weekly traces: the 97th percentile of non-empty weeks, so one huge week
+  // doesn't flatten every other year (taller weeks are clipped at the top)
+  eleventyConfig.addFilter("weeklyMax", (weekly) => {
+    const vals = Object.values(weekly || {}).flatMap((y) => [...(y.run || []), ...(y.ride || [])]).filter((v) => v > 0).sort((a, b) => a - b);
+    return vals.length ? Math.max(1, vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.97))]) : 1;
+  });
   // ---- the network ----
   eleventyConfig.addFilter("network", (stations, lines) => buildNetwork(stations, lines));
   eleventyConfig.addFilter("lineStations", (stations, lineId, lines) => lineStations(stations, lineId, lines));
@@ -196,6 +202,16 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("onLine", (items, id) => (items || []).filter((i) => ((i.data ? i.data.lines : i.lines) || []).includes(id)));
   eleventyConfig.addFilter("interchanges", (stations) => (stations || []).filter((s) => (s.lines || []).length > 1));
   eleventyConfig.addFilter("first", (arr) => (arr || [])[0]);
+  // [[year, stations], …], newest year first (input is already newest first)
+  eleventyConfig.addFilter("byYear", (stations) => {
+    const groups = new Map();
+    for (const s of stations || []) {
+      const y = toDate(s.date).getUTCFullYear();
+      if (!groups.has(y)) groups.set(y, []);
+      groups.get(y).push(s);
+    }
+    return [...groups.entries()].sort((a, b) => b[0] - a[0]);
+  });
 
   // ---- media on R2 (media.engin.al) ----
   // src/_data/media.json (written by scripts/r2-upload.mjs) lists files that live in the R2 bucket.

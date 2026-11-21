@@ -60,3 +60,29 @@ if (menu) {
   menu.addEventListener("click", (e) => { if (e.target.closest(".menu__sheet a")) menu.open = false; });
   matchMedia("(min-width: 44rem)").addEventListener("change", (e) => { if (e.matches) menu.open = false; });
 }
+
+// ---- line pages: year bar opens folded years and follows the year in view; panels fold on phones ----
+const yearLinks = [...document.querySelectorAll("[data-year-link]")];
+if (yearLinks.length) {
+  const openYear = (y) => { const d = document.querySelector(`details[data-year="${y}"]`); if (d) d.open = true; };
+  yearLinks.forEach((a) => a.addEventListener("click", () => openYear(a.dataset.yearLink)));
+  const fromHash = () => { const m = location.hash.match(/^#y(\d{4})$/); if (m) openYear(m[1]); };
+  fromHash();
+  addEventListener("hashchange", fromHash);
+  if ("IntersectionObserver" in window) {
+    const mark = (y) => yearLinks.forEach((a) => {
+      const on = a.dataset.yearLink === y;
+      a.classList.toggle("is-current", on);
+      if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+      if (on) a.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (visible) mark(visible.target.id.slice(1));
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll(".year-group").forEach((g) => io.observe(g));
+  }
+}
+if (matchMedia("(max-width: 59.99rem)").matches) {
+  document.querySelectorAll("[data-panel]").forEach((d) => { d.open = false; });
+}
