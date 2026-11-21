@@ -57,6 +57,7 @@
             <li><a href="{{ item.url }}"{% if page.url and page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
             {%- endif %}{% endfor %}
             <li><a href="/">The map</a></li>
+            <li><a href="/years/"{% if page.url and page.url.startsWith("/years/") %} aria-current="page"{% endif %}>Year by year</a></li>
             <li><a href="/search/" data-search-open>Search</a></li>
           </ul>
         </nav>
@@ -72,6 +73,8 @@
     <div class="wrap mono muted">
       <p>Map drawn at build time from the content · Eleventy · No tracking</p>
       <ul class="footer-links">
+        <li><a href="/years/">Year by year</a></li>
+        <li><a href="/search/">Search</a></li>
         <li><a href="/feed.xml">Feed</a></li>
         <li><a href="https://github.com/casab/engin.al" rel="noopener noreferrer">Source</a></li>
         {%- for s in site.socials %}<li><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a></li>{% endfor %}

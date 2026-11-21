@@ -1,0 +1,34 @@
+---
+layout: layouts/base.njk
+permalink: /years/
+title: Year by year
+description: Every year on the network, with what happened on each line.
+---
+{%- set weekly = strava.activities.weekly or {} -%}
+<div class="wrap">
+  <header class="page-head">
+    <p class="label">Year by year</p>
+    <h1 class="display">Year by year</h1>
+    <p class="lede">The same network, one year at a time.</p>
+  </header>
+
+  <ol class="years-list">
+    {%- for y in collections.stationYears %}
+    {%- set w = weekly[y.year] %}
+    <li class="years-list__row">
+      <a class="years-list__year display" href="/years/{{ y.year }}/">{{ y.year }}</a>
+      <ul class="years-list__lines tags" aria-label="Stations per line">
+        {%- for l in site.lines %}{% if y.lines[l.id] %}
+        <li class="tag c-{{ l.id }}"><span class="bar" aria-hidden="true"></span>{{ l.code }} {{ l.label }} <span class="mono">{{ y.lines[l.id] }}</span></li>
+        {%- endif %}{% endfor %}
+      </ul>
+      <p class="years-list__meta mono muted">
+        {{ y.stations.length }} station{% if y.stations.length != 1 %}s{% endif %}
+        {%- if y.interchanges %} · {{ y.interchanges }} interchange{% if y.interchanges != 1 %}s{% endif %}{% endif %}
+        {%- if w and w.run_km %} · {{ w.run_km }} km run{% endif %}
+        {%- if w and w.ride_km %} · {{ w.ride_km }} km ridden{% endif %}
+      </p>
+    </li>
+    {%- endfor %}
+  </ol>
+</div>

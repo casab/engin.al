@@ -42,6 +42,7 @@ eleventyComputed:
       <section class="year-group" id="y{{ year }}" aria-labelledby="yh{{ year }}">
         <details class="year-fold" data-year="{{ year }}"{% if loop.index <= 2 %} open{% endif %}>
           <summary class="year-fold__head"><h2 class="display" id="yh{{ year }}">{{ year }}</h2><span class="mono muted">{{ items.length }} station{% if items.length != 1 %}s{% endif %}</span></summary>
+          <p class="year-fold__more"><a href="/years/{{ year }}/">{{ year }} on every line →</a></p>
           <ol class="stops">
         {%- for s in items %}
         <li class="stop{% if s.lines.length > 1 %} stop--x{% endif %}" id="{{ s.id | slugify }}">
