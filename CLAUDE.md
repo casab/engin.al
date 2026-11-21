@@ -294,11 +294,14 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   workerd rejects it).
 - **CMS sign-in:** `/api/auth` + `/api/auth/callback` in `worker/index.js` (ported from technoetkinlik).
   Needs Worker secrets `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (GitHub OAuth app, callback
-  `https://engin.al/api/auth/callback`), set with `npx wrangler secret put …`. "Sign in with Token" works
-  without them.
+  `https://engin.al/api/auth/callback`), set with `npx wrangler secret put …`. Both are set (checked
+  2026-11-21: `npx wrangler secret list`, and `/api/auth` redirects to GitHub with the app's client id).
+  "Sign in with Token" works too.
 - **R2:** bucket `enginal-media` (EEUR), public at `https://media.engin.al`, bound as `MEDIA`. No access
   keys anywhere. Resizing via `/cdn-cgi/image` needs image resizing on the zone (zone id
-  `da3fd5a67c872a4ddbbafcf6636d92ff`); it was off as of 2026-11-21, Engin to switch on.
+  `da3fd5a67c872a4ddbbafcf6636d92ff`): it's on (checked 2026-11-21: `/cdn-cgi/image/width=120,format=auto/
+  engin-og.jpg` answers with a 3 KB AVIF and a `cf-resized: internal=ok` header). Not yet tried on
+  media.engin.al itself, since R2 holds no images yet (`media.json` is empty).
 - `/admin/*` headers: COOP `unsafe-none` (the sign-in popup), CSP allows `data:`/`blob:`, api.github.com,
   githubstatus.com.
 
@@ -345,7 +348,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   separate milestone.
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
   Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
-- Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
+- Photos (12–20 asked for; upload with `npm run r2:media`, then check one resized URL on media.engin.al) and
+  more music links.
 - `LICENSE` is MIT, "Copyright (c) 2023-2026 Engin Al" since 2026-11-21 (no AstroPaper code is left; the old
   line named its author). The README says the MIT license covers the code, not the writing, photos,
   recordings or Strava data. Keep the README in step with this file when commands or the layout change.
