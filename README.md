@@ -2,7 +2,7 @@
 
 Personal site of Engin Al: **four lines, one network**. Code, circuits, sound and distance are four transit lines. Projects, recordings, milestones and races are stations, and work that crosses disciplines is an interchange.
 
-Static site built with [Eleventy](https://www.11ty.dev/), edited with [Sveltia CMS](https://sveltiacms.app/) at `/admin/`, deployed to Cloudflare as an assets-only Worker (`wrangler.jsonc`) through Cloudflare's Git integration. No framework, no trackers. The network map is laid out at build time from the content (`src/_lib/network.js`) and ships as plain SVG; the line filter is pure CSS.
+Static site built with [Eleventy](https://www.11ty.dev/), edited with [Sveltia CMS](https://sveltiacms.app/) at `/admin/`, deployed to Cloudflare as a Worker with static assets (`wrangler.jsonc`) by Workers Builds on every push to `main`; the only server code is the CMS sign-in. No framework, no trackers. The network map is laid out at build time from the content (`src/_lib/network.js`) and ships as plain SVG; the line filter is pure CSS.
 
 ## Develop
 
@@ -10,8 +10,12 @@ Static site built with [Eleventy](https://www.11ty.dev/), edited with [Sveltia C
 npm ci
 npm run serve        # http://localhost:8080 (drafts are shown, marked "draft")
 npm run build        # → _site/ (drafts hidden)
+npm run build:deploy # clean build, content hashes in asset names, then the checks (what Cloudflare runs)
 npm run check        # broken links, missing alt text, CSP-unsafe markup, demo data
+npm run strava:sync  # pull Strava into src/_data/strava (needs .env), then commit it
+npm run strava:rename # dry run of scripts/strava-renames.json; `-- --apply` renames on Strava
 npm run strava:demo  # fake races for layout work; `node scripts/strava-demo.mjs --clear` before committing
+npm run r2:media     # upload images to R2 with your wrangler login
 npm run deploy       # manual deploy from your machine (clean build + check + wrangler deploy)
 ```
 
@@ -22,9 +26,9 @@ Node 22.9+.
 | Path | What |
 |---|---|
 | `src/projects/<slug>/index.md` | a project; images next to it. `lines: [circuits, code]`: the first sets the colour, two or more make an interchange. `short:` is an optional map label |
-| `src/sound/<slug>/index.md` | a live set, mix, track or release (Sound line unless `lines` says otherwise); `embed_url` becomes a click-to-load player |
-| `src/stops/*.md` | milestones without a page of their own (a degree, a first gig, a new job): title, date, lines |
-| `src/distance/<strava-id>.md` | optional note/title/photo for a synced Strava activity, or `show: true` / `hidden: true` |
+| `src/sound/<slug>/index.md` | a live set, mix, track or release (Sound line unless `lines` says otherwise); `embed_url` (the recording) and `tracklist_url` (a playlist of the tracks played) become click-to-load players |
+| `src/stops/*.md` | milestones without a page of their own: gigs without a recording, and periods with an `end` date (jobs, degrees), drawn as bars under the map |
+| `src/distance/<strava-id>.md` | optional note/photo for a synced Strava activity, or `show: true` / `hidden: true` / `duplicate: true` |
 | `src/notes/*.md` | occasional longer notes (not on the map, not in the menu) |
 | `src/_data/site.json` | the four lines (name, colour, description), menu, home intro, socials |
 | `src/_data/now.json` | the Now page and the departures board rows |
@@ -33,7 +37,8 @@ Node 22.9+.
 | `src/_lib/network.js` | the map layout: one column per station by date, fixed lanes, 45° bends into interchanges, all lines ending at "Now" |
 | `src/_lib/signal.js` | route traces, elevation profiles and weekly-distance traces as SVG paths |
 | `src/pages/line.njk` | one page per line (`/code/`, `/circuits/`, `/sound/`, `/distance/`) |
-| `src/assets/js/site.js` | click-to-load players and the split-flap animation; everything works without it |
+| `src/pages/year.njk`, `search.njk` | `/years/<yyyy>/` and `/search/` (plus `/search.json`) |
+| `src/assets/js/site.js` | click-to-load players, the split-flap animation, the menu; loads `map.js` (pan, timeline, station cards) and `search.js` on demand. Everything works without it |
 | `public/admin/config.yml` | Sveltia CMS collections |
 | `public/_headers`, `public/_redirects` | CSP and caching; old URLs → new ones |
 | `wrangler.jsonc` | Worker name, asset handling, which paths run the Worker (`/api/*`) |
@@ -53,7 +58,7 @@ See [docs/EDITING.md](docs/EDITING.md). Short version: open `/admin/`, sign in, 
    - Non-production branch deploy command: `npx wrangler versions upload` (every pull request gets a preview URL)
 
    The Worker name comes from `wrangler.jsonc` (`engin-al`). No Cloudflare secrets are needed in GitHub: the GitHub Actions `ci` workflow only builds and checks.
-2. **Domain**: engin.al currently points at GitHub Pages. Once the zone is on Cloudflare, uncomment the `routes` entry in `wrangler.jsonc` (or add the custom domain in the dashboard), let it deploy, and turn GitHub Pages off in the repository settings.
+2. **Domain**: engin.al is attached to the Worker as a custom domain in the Cloudflare dashboard, deliberately not through `routes` in `wrangler.jsonc`, so deploys never touch it.
 3. **Strava**:
    - Create an API app at <https://www.strava.com/settings/api> with callback domain `localhost`.
    - `cp .env.example .env`, fill in `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET`, run `npm run strava:auth` and approve. This stores `STRAVA_REFRESH_TOKEN` in `.env`.
@@ -76,4 +81,8 @@ See [docs/EDITING.md](docs/EDITING.md). Short version: open `/admin/`, sign in, 
 
 ## Credits
 
-Fonts: [Bricolage Grotesque](https://github.com/ateliertriay/bricolage) and [Martian Mono](https://github.com/evilmartians/mono), both under the SIL Open Font License (see `src/assets/fonts/`).
+Fonts: [Archivo](https://github.com/Omnibus-Type/Archivo) and [IBM Plex Mono](https://github.com/IBM/plex), both under the SIL Open Font License (see `src/assets/fonts/`).
+
+## License
+
+The code is MIT (see `LICENSE`). The writing, photos, recordings and Strava data on the site are Engin's own and not covered by it.

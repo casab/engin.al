@@ -339,4 +339,6 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - No recording known for Decentralized Consensus (Nomads 36, 2026-04-24; its page plays the tracklist) or
   Synth Sessions #2 (Engin's live set, a milestone). When one appears, add `embed_url` / move it to `src/sound/`.
 - Photos (12–20 asked for), more music links, the CMS OAuth secrets, image resizing on the zone.
-- `LICENSE` still carries AstroPaper's copyright line.
+- `LICENSE` is MIT, "Copyright (c) 2023-2026 Engin Al" since 2026-11-21 (no AstroPaper code is left; the old
+  line named its author). The README says the MIT license covers the code, not the writing, photos,
+  recordings or Strava data. Keep the README in step with this file when commands or the layout change.
