@@ -9,6 +9,7 @@ permalink: /
 {%- for s in xs %}{% if not featured and s.featured %}{% set featured = s %}{% endif %}{% endfor -%}
 {%- if not featured %}{% set featured = xs | first %}{% endif -%}
 
+<div class="home">
 <section class="hero wrap split split--7-5" aria-labelledby="hero-title">
   <h1 class="display" id="hero-title">Four lines,<br>one network.</h1>
   <div class="intro">
@@ -16,14 +17,14 @@ permalink: /
   </div>
 </section>
 
-{{ m.network(stations, site.lines) }}
+<div class="home__network">{{ m.network(stations, site.lines) }}</div>
 
-<div class="wrap section">
+<div class="wrap section home__board">
   {%- set rows = now.board if now.board and now.board.length else [] -%}
   {%- if rows.length %}{{ m.board(rows, site.lines) }}{% endif %}
 </div>
 
-<section class="wrap" aria-label="Lines">
+<section class="wrap home__lines" aria-label="Lines">
   <div class="lines-index">
     {%- for l in site.lines %}
     {%- set list = stations | lineStations(l.id, site.lines) %}
@@ -93,3 +94,4 @@ permalink: /
     <dt>More</dt><dd><a href="/about/">About</a> · <a href="/now/">Now</a></dd>
   </dl>
 </section>
+</div>

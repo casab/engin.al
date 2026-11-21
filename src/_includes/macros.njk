@@ -71,7 +71,7 @@
       <span class="diagram__text"><a class="diagram__title" href="/now/">Now</a><span class="mono muted">all lines</span></span>
     </li>
     {%- for s in stations %}
-    <li class="diagram__row{% for l in s.lines %} on-{{ l }}{% endfor %}">
+    <li class="diagram__row{% if loop.index > 12 %} is-more{% endif %}{% for l in s.lines %} on-{{ l }}{% endfor %}">
       {%- for l in lines %}<span class="diagram__cell c-{{ l.id }}" aria-hidden="true">{% if l.id in s.lines %}<span class="diagram__dot"></span>{% endif %}</span>{% endfor %}
       <span class="diagram__text">
         {%- if s.url %}<a class="diagram__title" href="{{ s.url }}">{{ s.title }}</a>{% else %}<span class="diagram__title">{{ s.title }}</span>{% endif %}
@@ -80,6 +80,11 @@
     </li>
     {%- endfor %}
   </ol>
+  {%- if stations.length > 12 %}
+  {#- Phones show the newest 12; this CSS-only toggle shows the rest (a line filter shows all of that line). #}
+  <input class="diagram__all-input" type="checkbox" id="d-all">
+  <label class="diagram__all cta" for="d-all"><span class="when-closed">Show all {{ stations.length }} stations</span><span class="when-open">Show the latest 12</span></label>
+  {%- endif %}
 </section>
 {%- endmacro -%}
 

@@ -38,6 +38,23 @@
           {%- endfor %}
         </ul>
       </nav>
+      {#- Phones: the same menu as a full-screen sheet. <details> keeps it working without JS. #}
+      <details class="menu" data-menu>
+        <summary class="menu__btn"><span class="menu__open">Menu</span><span class="menu__close">Close</span></summary>
+        <nav class="menu__sheet" aria-label="Main menu">
+          <ul class="menu__lines">
+            {%- for l in site.lines %}{% set n = (collections.stations | lineStations(l.id, site.lines)).length %}
+            <li class="c-{{ l.id }}"><a href="{{ l.url }}"{% if page.url and page.url.startsWith(l.url) %} aria-current="page"{% endif %}><span class="bar" aria-hidden="true"></span><span class="menu__name">{{ l.label }}</span><span class="mono muted">{{ l.code }} · {{ n }} station{% if n != 1 %}s{% endif %}</span></a></li>
+            {%- endfor %}
+          </ul>
+          <ul class="menu__more">
+            {%- for item in site.nav %}{% if not item.line %}
+            <li><a href="{{ item.url }}"{% if page.url and page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
+            {%- endif %}{% endfor %}
+            <li><a href="/">The map</a></li>
+          </ul>
+        </nav>
+      </details>
     </div>
   </header>
 
@@ -47,8 +64,12 @@
 
   <footer class="site-footer">
     <div class="wrap mono muted">
-      <span>Map drawn at build time from the content · Eleventy · No tracking · <a href="/feed.xml">feed</a> · <a href="https://github.com/casab/engin.al" rel="noopener noreferrer">source</a></span>
-      <span>{% for s in site.socials %}<a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</span>
+      <p>Map drawn at build time from the content · Eleventy · No tracking</p>
+      <ul class="footer-links">
+        <li><a href="/feed.xml">Feed</a></li>
+        <li><a href="https://github.com/casab/engin.al" rel="noopener noreferrer">Source</a></li>
+        {%- for s in site.socials %}<li><a href="{{ s.url }}" rel="me noopener noreferrer">{{ s.label }}</a></li>{% endfor %}
+      </ul>
     </div>
   </footer>
 </body>
