@@ -73,14 +73,16 @@ for await (const file of walk(path.join(ROOT, "assets"))) {
   }
 }
 
-// a recording's player plays that recording: a SoundCloud playlist (/sets/) is a tracklist or a whole night of
-// other people's sets, so it belongs under links (releases may be playlists: an EP)
+// a recording's player plays that recording: a SoundCloud playlist (/sets/) is a tracklist (tracklist_url) or a
+// whole night of other people's sets (links), never embed_url (releases may be playlists: an EP). A page with
+// neither a recording nor a tracklist should be a milestone (src/stops/).
 for (const dir of await readdir("src/sound", { withFileTypes: true })) {
   if (!dir.isDirectory()) continue;
   const md = await readFile(path.join("src/sound", dir.name, "index.md"), "utf8").catch(() => "");
-  const embed = md.match(/^embed_url:\s*"?([^"\n]+)/m)?.[1] || "";
-  const kind = md.match(/^kind:\s*"?([^"\n]+)/m)?.[1] || "";
-  if (/soundcloud\.com\/[^/]+\/sets\//.test(embed) && kind !== "release") errors.push(`src/sound/${dir.name}: embed_url is a SoundCloud playlist (${embed}), not the recording`);
+  const field = (name) => md.match(new RegExp(`^${name}:\\s*"?([^"\\n]+)`, "m"))?.[1]?.trim() || "";
+  const [embed, tracklist, kind] = [field("embed_url"), field("tracklist_url"), field("kind")];
+  if (/soundcloud\.com\/[^/]+\/sets\//.test(embed) && kind !== "release") errors.push(`src/sound/${dir.name}: embed_url is a SoundCloud playlist (${embed}): a tracklist goes in tracklist_url`);
+  if (!embed && !tracklist && !/^draft:\s*true/m.test(md)) errors.push(`src/sound/${dir.name}: no embed_url or tracklist_url: a gig without either is a milestone (src/stops/)`);
 }
 
 // demo Strava data (scripts/strava-demo.mjs) must never reach production
