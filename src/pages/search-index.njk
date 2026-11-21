@@ -1,0 +1,6 @@
+---
+permalink: /search.json
+eleventyExcludeFromCollections: true
+---
+{%- set index = { "lines": site.lines, "items": collections.stations | searchIndex(collections.notes) } -%}
+{{ index | json | safe }}

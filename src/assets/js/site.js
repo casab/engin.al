@@ -92,3 +92,29 @@ const network = document.querySelector(".network");
 if (network && network.querySelector(".map svg")) {
   import("./map.js").then((m) => m.initMap(network)).catch(() => {});
 }
+
+// ---- search: the header button, Ctrl/Cmd+K and / open a dialog (search.js loads on first use) ----
+let searchModule = null;
+const loadSearch = () => (searchModule ||= import("./search.js"));
+const openSearch = () => loadSearch().then((m) => m.openDialog()).catch(() => { location.href = "/search/"; });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-search-open]");
+  if (!a || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  if (menu) menu.open = false;
+  openSearch();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.defaultPrevented || e.altKey) return;
+  const typing = e.target.closest && e.target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true']");
+  if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSearch(); }
+  else if (e.key === "/" && !typing && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openSearch(); }
+});
+const searchKey = document.querySelector("[data-search-key]");
+if (searchKey) {
+  const mac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform || navigator.platform || "");
+  searchKey.textContent = mac ? "⌘ K" : "Ctrl K";
+  searchKey.hidden = false;
+}
+const searchPage = document.querySelector("[data-search-page]");
+if (searchPage) loadSearch().then((m) => m.mountPage(searchPage)).catch(() => {});

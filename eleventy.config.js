@@ -210,6 +210,28 @@ export default function (eleventyConfig) {
     const meta = (s) => (s.meta || "").split(" · ").filter((p) => p !== String(toDate(s.date).getUTCFullYear())).join(" · ");
     return (stations || []).map((s) => ({ t: s.title, d: month(s.date), m: meta(s), s: s.summary, u: s.url, l: s.lines.map((id) => [id, ...(code[id] || [id, id])]) }));
   });
+  // /search.json: every station and note, newest first, with short keys (search.js reads them)
+  const KIND = { project: "Project", sound: "Recording", stop: "Milestone", race: "Run", ride: "Ride", note: "Note" };
+  const trim = (s, n) => { s = String(s || "").replace(/<[^>]+>/g, "").replace(/[#*_`>\[\]]/g, "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + "…" : s; };
+  eleventyConfig.addFilter("searchIndex", (stations, notes) => [
+    ...(stations || []).map((s) => ({
+      t: s.title,
+      s: s.short && s.short !== s.title ? s.short : undefined,
+      l: s.lines,
+      y: toDate(s.date).getUTCFullYear(),
+      k: KIND[s.kind] || s.kind,
+      m: s.meta || undefined,
+      x: (s.data && s.data.stack && s.data.stack.length) ? s.data.stack.join(" ") : undefined,
+      u: s.url || undefined,
+      d: trim(s.summary || s.note, 160) || undefined,
+    })),
+    ...(notes || []).map((n) => ({
+      t: n.data.title, l: [], y: toDate(n.data.date).getUTCFullYear(), k: KIND.note, u: n.url,
+      x: (n.data.tags || []).join(" ") || undefined, d: trim(n.data.description, 160) || undefined,
+    })),
+  ]);
+  // A–Z by title (the /search/ page without JS)
+  eleventyConfig.addFilter("byTitle", (items) => (items || []).slice().sort((a, b) => String(a.title).localeCompare(String(b.title), "tr")));
   // [[year, stations], …], newest year first (input is already newest first)
   eleventyConfig.addFilter("byYear", (stations) => {
     const groups = new Map();
