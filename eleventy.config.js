@@ -133,7 +133,8 @@ export default function (eleventyConfig) {
     return [
       ...projects(api).map((p) => fromItem(p, "project", [p.data.stack && p.data.stack[0], toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       ...sound(api).map((p) => fromItem(p, "sound", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
-      ...stops(api).map((p) => fromItem(p, "stop", String(toDate(p.data.date).getUTCFullYear()))),
+      // a gig without a recording of my own set is a stop too: artist and kind (dj set, live set) like a recording
+      ...stops(api).map((p) => fromItem(p, "stop", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       ...races,
     ].sort((a, b) => b.date - a.date);
   };
