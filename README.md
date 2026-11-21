@@ -68,8 +68,8 @@ See [docs/EDITING.md](docs/EDITING.md). Short version: open `/admin/`, sign in, 
 4. **CMS sign-in** (same setup as technoetkinlik): "Sign in with GitHub" goes through the site's own Worker (`worker/index.js`, `/api/auth`).
    - Create a GitHub OAuth app at <https://github.com/settings/developers> → *OAuth Apps* → *New OAuth App*: homepage `https://engin.al`, callback URL `https://engin.al/api/auth/callback`.
    - In Cloudflare: *Workers & Pages* → `engin-al` → *Settings* → *Variables and secrets*: add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, both as type **Secret** (deploys keep secrets; plain variables would be overwritten by `wrangler.jsonc`).
-   - Until then, "Sign in with Token" works with a fine-grained GitHub token (*Contents: read and write* on this repo).
-5. **Media on R2**: bucket `enginal-media` (EEUR) is public at `https://media.engin.al` and bound to the Worker as `MEDIA`. No R2 keys: `npm run r2:media` uploads with your wrangler login (`npx wrangler login` once), records each file in `src/_data/media.json`, and `-- --prune` deletes local copies once the public copy matches. Resized images (`/cdn-cgi/image/…`) need image resizing on the zone (one-time, see the PR).
+   - Both secrets are set. "Sign in with Token" also works, with a fine-grained GitHub token (*Contents: read and write* on this repo).
+5. **Media on R2**: bucket `enginal-media` (EEUR) is public at `https://media.engin.al` and bound to the Worker as `MEDIA`. No R2 keys: `npm run r2:media` uploads with your wrangler login (`npx wrangler login` once), records each file in `src/_data/media.json`, and `-- --prune` deletes local copies once the public copy matches. Resized images (`/cdn-cgi/image/…`) use image resizing, which is on for the zone.
 
 ## Strava privacy
 
