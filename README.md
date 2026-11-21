@@ -69,7 +69,8 @@ See [docs/EDITING.md](docs/EDITING.md). Short version: open `/admin/`, sign in, 
 ## Strava privacy
 
 - The token only has `activity:read`, so Strava itself leaves out "Only you" activities and privacy-zone data.
-- Only races (and rides over `STRAVA_RIDE_MIN_KM`, default 100 km) get a route card. Everything else only feeds the weekly totals, which hold no locations.
+- Shown on the site: races, runs of at least `STRAVA_RUN_MIN_KM` (default 4 km) and rides of at least `STRAVA_RIDE_MIN_KM` (default 10 km). Shorter ones only feed the weekly totals, which hold no locations.
+- At most `STRAVA_MAX_ROUTES` (default 80) new routes are downloaded per sync, to stay under Strava's 100 requests per 15 minutes; a long history fills in over the following daily syncs.
 - Every route loses its first and last 600 m (`STRAVA_TRIM_M`) and anything inside `STRAVA_PRIVACY_ZONES`, and is simplified before it's written.
 - The "Powered by Strava" attribution on `/distance/` is required by Strava's API terms.
 
