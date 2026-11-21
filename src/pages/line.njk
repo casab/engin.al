@@ -44,7 +44,7 @@ eleventyComputed:
           <span class="stop__rail" aria-hidden="true"><span class="stop__dot"></span></span>
           <div class="stop__body">
             <div class="stop__title">
-              <h2>{% if s.url and s.kind != "race" and s.kind != "ride" %}<a href="{{ s.url }}">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</h2>
+              <h2>{% if s.url and s.kind != "race" and s.kind != "ride" %}<a href="{{ s.url }}"{% if s.url.startsWith("http") %} rel="noopener noreferrer"{% endif %}>{{ s.title }}{% if s.url.startsWith("http") %} <span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (external site)</span>{% endif %}</a>{% else %}{{ s.title }}{% endif %}</h2>
               <span class="mono muted">{{ s.code }} · {{ s.meta }}{% if s.draft %} · <span class="draft">draft</span>{% endif %}</span>
             </div>
             {%- if s.summary %}<p class="stop__summary">{{ s.summary }}</p>{% endif %}
@@ -86,6 +86,24 @@ eleventyComputed:
     </div>
 
     <aside class="aside">
+      {%- if l.id == "sound" and site.aliases and site.aliases.length %}
+      <section aria-labelledby="aliases-title">
+        <h2 class="display" id="aliases-title">Names on the bill</h2>
+        <div class="aliases">
+          {%- for a in site.aliases %}
+          <div class="alias">
+            <h3>{{ a.name }}</h3>
+            <p><span class="label">{{ a.role }}</span> · {{ a.note }}</p>
+            <ul>{% for k in a.links %}<li><a href="{{ k.url }}" rel="me noopener noreferrer">{{ k.label }} ↗</a></li>{% endfor %}</ul>
+          </div>
+          {%- endfor %}
+        </div>
+        {%- for a in site.aliases %}{% for k in a.links %}{% if "open.spotify.com" in k.url %}
+        <div class="alias-player">{{ m.player({ url: k.url, title: a.name + " on Spotify" } | player) }}</div>
+        {%- endif %}{% endfor %}{% endfor %}
+      </section>
+      {%- endif %}
+
       {%- if l.id == "sound" and rig.items and rig.items.length %}
       <section aria-labelledby="rig-title">
         <h2 class="display" id="rig-title">Rolling stock</h2>
@@ -119,6 +137,7 @@ eleventyComputed:
         </div>
       </section>
       {%- endif %}
+      {%- if site.strava_url %}<p><a class="cta" href="{{ site.strava_url }}" rel="me noopener noreferrer">Follow on Strava ↗</a></p>{% endif %}
       <p class="mono muted">Data powered by <a href="https://www.strava.com" rel="noopener noreferrer">Strava</a>{% if strava.activities.synced_at %} · synced {{ strava.activities.synced_at | date("long") }}{% endif %}. Routes are trimmed at both ends.</p>
       {%- endif %}
 

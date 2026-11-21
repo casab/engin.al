@@ -130,7 +130,7 @@ export default function (eleventyConfig) {
       }));
     return [
       ...projects(api).map((p) => fromItem(p, "project", [p.data.stack && p.data.stack[0], toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
-      ...sound(api).map((p) => fromItem(p, "sound", [p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
+      ...sound(api).map((p) => fromItem(p, "sound", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       ...stops(api).map((p) => fromItem(p, "stop", String(toDate(p.data.date).getUTCFullYear()))),
       ...races,
     ].sort((a, b) => b.date - a.date);
@@ -260,6 +260,13 @@ export default function (eleventyConfig) {
       const kind = item.bandcamp_type || (parts[0] === "track" ? "track" : "album");
       const embed = `https://bandcamp.com/EmbeddedPlayer/${kind}=${item.bandcamp_id}/size=large/bgcol=0b0d12/linkcol=ff5ec8/artwork=small/tracklist=false/transparent=true/`;
       return { type: "bandcamp", url: u.href, label, embed, height: 120 };
+    }
+    if (/^open\.spotify\.com$/.test(u.hostname)) {
+      const i = parts.findIndex((p) => ["track", "album", "artist", "playlist", "episode"].includes(p));
+      if (i >= 0 && parts[i + 1]) {
+        const embed = `https://open.spotify.com/embed/${parts[i]}/${encodeURIComponent(parts[i + 1])}`;
+        return { type: "spotify", url: u.href, label, embed, height: parts[i] === "track" || parts[i] === "episode" ? 152 : 352 };
+      }
     }
     const yt = /(^|\.)youtube\.com$/.test(u.hostname) ? u.searchParams.get("v") || (parts[0] === "live" ? parts[1] : null)
       : /^youtu\.be$/.test(u.hostname) ? parts[0] : null;

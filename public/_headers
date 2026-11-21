@@ -1,6 +1,6 @@
 # Security + caching headers (Cloudflare Pages)
 /*
-  Content-Security-Policy: default-src 'self'; img-src 'self' data: https://media.engin.al; media-src 'self' https://media.engin.al; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://bandcamp.com https://w.soundcloud.com https://player-widget.mixcloud.com https://www.mixcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: https://media.engin.al; media-src 'self' https://media.engin.al; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://bandcamp.com https://w.soundcloud.com https://player-widget.mixcloud.com https://www.mixcloud.com https://open.spotify.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
