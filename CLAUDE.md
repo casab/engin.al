@@ -197,7 +197,9 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Content sources (where facts come from)
 
 - **Balgum gigs:** uncvl.xyz event data (`origin/main` of the uncvl repo, `lineup` with `act_type`,
-  `duration`); event URLs are `/events/<folder without date>/`.
+  `duration`); event URLs are `/events/<folder without date>/`. Gigs elsewhere: Resident Advisor
+  (`ra.co/dj/balgum`, event pages like `ra.co/events/1990893`, Moment x Byond VII). curl gets a 403 there, but
+  the page reads fine in the browser pane.
 - **Recordings:** SoundCloud `balgum` (user id 4014191). The RSS feed only has one item; the profile HTML
   `/balgum/tracks` lists the tracks, and track pages carry `<time pubdate>` and duration. **`/balgum/sets` renders
   only the newest playlist in its HTML** (the rest load on scroll): list them in the browser pane by scrolling
