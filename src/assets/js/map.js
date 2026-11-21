@@ -98,7 +98,7 @@ export function initMap(network) {
   card.addEventListener("pointerleave", () => hide());
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !card.hidden) { const g = current; hide(true); g && focusable(g)?.focus(); } });
   document.addEventListener("pointerdown", (e) => { if (!card.hidden && !card.contains(e.target) && !e.target.closest(".st")) hide(true); });
-  scroller.addEventListener("scroll", () => { if (current) place(current); markYear(); }, { passive: true });
+  scroller.addEventListener("scroll", () => { if (current) place(current); markYear(); syncRail(); }, { passive: true });
 
   // ---------------------------------------------------------------- drag to pan (mouse; touch scrolls natively)
   let lastPointer = "mouse", dragged = false, startX = 0, startScroll = 0, dragging = false;
@@ -181,4 +181,104 @@ export function initMap(network) {
     }
   }
   markYear();
+
+  // ---------------------------------------------------------------- overview rail (replaces the native scrollbar)
+  // A miniature of the whole network under the map; the framed window is the part on screen. Drag the window,
+  // or click/tap anywhere on the rail to go there. Without JS the map keeps a thin native scrollbar.
+  const NS = "http://www.w3.org/2000/svg";
+  const rail = document.createElement("div");
+  rail.className = "map-rail";
+  rail.hidden = true;
+  rail.tabIndex = 0;
+  scroller.id ||= "network-map";
+  for (const [k, v] of Object.entries({ role: "scrollbar", "aria-controls": scroller.id, "aria-orientation": "horizontal",
+    "aria-label": "Map overview", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "100" })) rail.setAttribute(k, v);
+  const mini = document.createElementNS(NS, "svg");
+  mini.setAttribute("viewBox", svg.getAttribute("viewBox"));
+  mini.setAttribute("preserveAspectRatio", "none");
+  mini.setAttribute("aria-hidden", "true");
+  for (const ln of svg.querySelectorAll(".ln")) {
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", ln.getAttribute("class")); // .ln.c-<line>: the line filter dims it like the map
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", ln.querySelector("path").getAttribute("d"));
+    g.append(p);
+    mini.append(g);
+  }
+  const hubRect = svg.querySelector(".hub rect");
+  if (hubRect) { const r = hubRect.cloneNode(); r.setAttribute("class", "map-rail__hub"); mini.append(r); }
+  rail.append(mini);
+  // only the band the lines run in (the map's height is mostly labels), at the map's full width.
+  // Measured once the map is visible (getBBox is empty while it's hidden on phones).
+  let cropped = false;
+  function crop() {
+    try {
+      let top = Infinity, bottom = -Infinity;
+      for (const el of svg.querySelectorAll(".ln path, .hub rect")) {
+        const b = el.getBBox();
+        top = Math.min(top, b.y);
+        bottom = Math.max(bottom, b.y + b.height);
+      }
+      if (!(bottom > top)) return;
+      const vb = svg.viewBox.baseVal;
+      mini.setAttribute("viewBox", `${vb.x} ${top - 6} ${vb.width} ${bottom - top + 12}`);
+      cropped = true;
+    } catch {}
+  }
+  const win = document.createElement("span");
+  win.className = "map-rail__window";
+  rail.append(win);
+  scroller.after(rail);
+
+  // rtl: scrollLeft runs from -max (left end) to 0 (right end); pos is the same thing counted from the left
+  const maxScroll = () => scroller.scrollWidth - scroller.clientWidth;
+  function syncRail() {
+    const max = maxScroll();
+    const on = max > 4;
+    rail.hidden = !on;
+    scroller.classList.toggle("has-rail", on);
+    if (!on) return;
+    if (!cropped) crop();
+    const pos = Math.max(0, Math.min(max, scroller.scrollLeft + max));
+    win.style.setProperty("--l", `${(pos / scroller.scrollWidth) * 100}%`);
+    win.style.setProperty("--w", `${(scroller.clientWidth / scroller.scrollWidth) * 100}%`);
+    rail.setAttribute("aria-valuenow", String(Math.round((pos / max) * 100)));
+    rail.setAttribute("aria-valuetext", markedYear() || "Now");
+  }
+  const markedYear = () => yearButtons.find((b) => b.classList.contains("is-current"))?.textContent;
+  // put the window's left edge at clientX - grab
+  let grab = null;
+  function railTo(clientX, smooth) {
+    const r = rail.getBoundingClientRect();
+    const max = maxScroll();
+    const pos = Math.max(0, Math.min(max, ((clientX - grab - r.left) / r.width) * scroller.scrollWidth));
+    scroller.scrollTo({ left: pos - max, behavior: smooth ? behavior : "auto" });
+  }
+  rail.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    rail.setPointerCapture(e.pointerId);
+    rail.classList.add("is-grabbing");
+    hide(true);
+    const w = win.getBoundingClientRect();
+    const onWindow = e.clientX >= w.left && e.clientX <= w.right;
+    // grabbing the window keeps where it was held; anywhere else the window glides over to centre there
+    grab = onWindow ? e.clientX - w.left : w.width / 2;
+    if (!onWindow) railTo(e.clientX, true);
+  });
+  rail.addEventListener("pointermove", (e) => { if (grab !== null && e.buttons) railTo(e.clientX, false); });
+  const release = () => { grab = null; rail.classList.remove("is-grabbing"); };
+  rail.addEventListener("pointerup", release);
+  rail.addEventListener("pointercancel", release);
+  rail.addEventListener("keydown", (e) => {
+    const step = scroller.clientWidth * 0.5;
+    const moves = { ArrowLeft: -step, ArrowRight: step, PageUp: -scroller.clientWidth, PageDown: scroller.clientWidth };
+    if (e.key in moves) scroller.scrollBy({ left: moves[e.key], behavior });
+    else if (e.key === "Home") scroller.scrollTo({ left: -maxScroll(), behavior });
+    else if (e.key === "End") scroller.scrollTo({ left: 0, behavior });
+    else return;
+    e.preventDefault();
+  });
+  new ResizeObserver(syncRail).observe(scroller);
+  syncRail();
 }

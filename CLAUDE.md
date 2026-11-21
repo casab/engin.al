@@ -14,6 +14,9 @@ interchange. Live at https://engin.al. Repo: github.com/casab/engin.al (public).
   a git worktree under `.claude/worktrees/…`. Every change goes on a branch from the latest `origin/main`
   and into its own PR; Engin merges. **Always `git fetch` and branch from `origin/main`**: PRs often get
   merged while Claude is still working, and a push to an already-merged branch needs a new PR.
+- **Don't stack PRs on each other's branches.** On 2026-11-21 #13–#16 targeted the previous PR's branch; merged
+  in quick succession, they landed in those branches and never reached `main` (fixed by a follow-up PR). Target
+  `main` every time; if a PR depends on an open one, say so in its description and let it show both diffs.
 - After a merge, Engin's checkout needs `git pull` (and `npm ci` when dependencies changed) before he runs
   any local command (Strava sync, `wrangler secret put`, …).
 - Engin prefers being given **commands to run himself** for credentials and account setup (secrets, OAuth
@@ -102,6 +105,12 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   data-map-data>` block built by the `mapCards` filter, indexed by `data-st`. The card is positioned with
   `style.setProperty("--x"/"--y")` (CSSOM is fine under the CSP; `style=""` attributes are not).
 - In the rtl scroller `scrollLeft` is 0 at the right end and negative further left.
+- **Overview rail** instead of the native scrollbar (Engin found the default one too generic): `map.js` builds a
+  `.map-rail` under the map with a miniature of the line paths (cloned, viewBox cropped to the lines' band,
+  `preserveAspectRatio="none"` + `vector-effect: non-scaling-stroke`) and a framed window for the part on screen.
+  Drag the window, click/tap the rail to glide there, or ←/→/PageUp/PageDown/Home/End on it (`role="scrollbar"`).
+  It only appears when the map overflows, and it's hidden on phones. The `.ln` clones follow the line filter.
+  Without JS the map keeps a thin ink scrollbar (`scrollbar-color`, also on `pre`).
 
 ## Phones
 
