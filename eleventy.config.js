@@ -5,6 +5,7 @@ import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import { routeGeometry, weeklyTrace } from "./src/_lib/signal.js";
 import { buildNetwork, lineStations } from "./src/_lib/network.js";
+import { cardSpec, registerCard, renderCards } from "./scripts/og.mjs";
 
 const TZ = "Europe/Istanbul";
 const SITE_URL = "https://engin.al/";
@@ -226,6 +227,21 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("onLine", (items, id) => (items || []).filter((i) => ((i.data ? i.data.lines : i.lines) || []).includes(id)));
   eleventyConfig.addFilter("interchanges", (stations) => (stations || []).filter((s) => (s.lines || []).length > 1));
   eleventyConfig.addFilter("first", (arr) => (arr || [])[0]);
+  // sitemap.xml: collections.all has only the first page of a paginated template, so add the line and year pages
+  eleventyConfig.addFilter("sitemapUrls", (all, lines, years) => {
+    const out = new Map();
+    for (const p of all || []) if (p.url && p.url.endsWith("/") && !p.data.draft) out.set(p.url, /^\/(projects|sound|notes)\//.test(p.url) ? p.data.date : null);
+    for (const l of lines || []) if (!out.has(l.url)) out.set(l.url, null);
+    for (const y of years || []) out.set(`/years/${y.year}/`, null);
+    return [...out].map(([url, date]) => ({ url, date })).sort((a, b) => a.url.localeCompare(b.url));
+  });
+  // Station pages: for each line the entry is on, its place on that line and the stations either side
+  eleventyConfig.addFilter("nextStops", (stations, url, ids, lines) => (ids || []).map((id) => {
+    const list = lineStations(stations, id, lines); // newest first
+    const i = list.findIndex((s) => s.url === url);
+    if (i === -1) return null;
+    return { line: lines.find((l) => l.id === id), n: list.length - i, total: list.length, newer: list[i - 1] || null, older: list[i + 1] || null };
+  }).filter(Boolean));
   // the lines that have a count in { lineId: n } (a year page draws only those)
   eleventyConfig.addFilter("linesIn", (lines, counts) => (lines || []).filter((l) => counts && counts[l.id]));
   // compact station data for the map's hover/tap cards (index = data-st on the station)
@@ -281,6 +297,14 @@ export default function (eleventyConfig) {
   };
   loadMedia();
   eleventyConfig.on("eleventy.before", loadMedia);
+
+  // Share cards (scripts/og.mjs): base.njk asks for the page's card URL; every card is drawn after the build.
+  eleventyConfig.addFilter("ogCard", (url, data, site) => registerCard(url, cardSpec(url, data || {}, site), site));
+  eleventyConfig.on("eleventy.after", async ({ directories }) => {
+    const t = Date.now();
+    const { total, drawn } = await renderCards(directories.output);
+    console.log(`[og] ${total} share cards (${drawn} drawn, the rest cached) in ${Date.now() - t} ms`);
+  });
   eleventyConfig.addWatchTarget("src/_data/media.json");
   const mediaKey = (src) => String(src || "").replace(/^\/+/, "");
   const cdn = (key, m, width, extra = "") =>

@@ -75,7 +75,9 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/pages/years.njk`, `year.njk` | `/years/` and `/years/<yyyy>/`, paginated over the `stationYears` collection |
 | `src/pages/search.njk`, `search-index.njk` | `/search/` (A–Z by line, the no-JS fallback) and `/search.json` (`searchIndex` filter) |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
-| `scripts/` | `check.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
+| `scripts/` | `check.mjs`, `og.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
+| `scripts/og.mjs`, `scripts/og-fonts/` | share cards (see below); static Archivo cuts made by `scripts/og-fonts.py` |
+| `src/pages/sitemap.njk` | `/sitemap.xml` (`sitemapUrls` filter adds the paginated line and year pages) |
 
 **Stations collection** (`eleventy.config.js`): merges projects, sound, stops and Strava races into plain
 objects (`id, title, short, date, lines, url, kind, meta, summary, draft, …`). The map, line pages and home
@@ -112,6 +114,22 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   and choosing a line filter shows every station of that line. When adding filter rules, the reveal rules
   are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
 - Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
+
+## Station pages and share cards
+
+- Project and recording pages end with **Next stops**: per line the entry is on, its number on that line and
+  the older/newer station (`nextStops` filter over `lineStations()`, `nextStops` macro). It replaced the old
+  projects-only pager.
+- A **Share** button (hidden without JS) on project, recording and note pages: the system share sheet on
+  touch devices, "Copy link" + a toast elsewhere. It shares the canonical `https://engin.al/...` URL.
+- **Share cards:** every page's `og:image` is `/og/<path>.png` (1200×630), drawn after each build by
+  `scripts/og.mjs` (satori → SVG, `@resvg/resvg-wasm` → PNG; no browser, works in Workers Builds). `base.njk`
+  calls the `ogCard` filter with the page's data; `cardSpec()` decides the kicker/headline/sub/lines per page
+  type; `renderCards()` runs on `eleventy.after`. Cached in `.cache/og` by content + code hash.
+  `check.mjs` fails if a page has no card. satori can't read variable fonts, so `scripts/og-fonts/` holds
+  static WOFF cuts of Archivo (62%/850, 125%/650, 100%/500); regenerate with `scripts/og-fonts.py` (needs
+  `fonttools` + `brotli` in a venv) only if the card needs another style.
+- `robots.txt` points at `/sitemap.xml`.
 
 ## Year pages
 
@@ -208,6 +226,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 ## Gotchas
 
 - `npm run build:deploy` deletes `_site`, which breaks a running `npm run serve`: restart the dev server.
+  The other way round too: a running dev server rebuilds into the same `_site` **with drafts**, so stop it
+  before checking a production build (`ls _site/years` once showed the draft-only years 2012/2015).
   The dev server also caches `_data` (new Strava routes didn't show until a restart) and doesn't always pick up
   changes to filters in `eleventy.config.js`: restart it.
 - Git Bash on Windows rewrites arguments that start with `/` into Windows paths: use `MSYS_NO_PATHCONV=1`.
