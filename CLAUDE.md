@@ -71,6 +71,8 @@ npx wrangler deploy --dry-run   # sanity check the Worker bundle and bindings
 | `src/assets/css/site.css` | the whole design system (layers, tokens) |
 | `src/assets/js/site.js` | click-to-load players, split-flap flip, `#f-<line>` filter hash. Everything works without it |
 | `src/assets/js/map.js` | the explorable map (pan, timeline, keyboard, station cards); imported by `site.js` |
+| `src/assets/js/search.js` | the search dialog and the live search on `/search/`; imported by `site.js` on first use |
+| `src/pages/search.njk`, `search-index.njk` | `/search/` (A–Z by line, the no-JS fallback) and `/search.json` (`searchIndex` filter) |
 | `worker/index.js` | the only server code: `/api/auth` GitHub OAuth for the CMS |
 | `scripts/` | `check.mjs`, `strava-*.mjs`, `r2-upload.mjs`, `strip-metadata.mjs` |
 
@@ -109,6 +111,18 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
   and choosing a line filter shows every station of that line. When adding filter rules, the reveal rules
   are written per line on purpose: a generic `:not(#f-all)` rule out-specifies the line filters.
 - Every tappable thing is ≥ 44 px (`min-height: 2.75rem`). Measured at 375 px: home ≈ 4,500 px tall.
+
+## Search
+
+- `/search.json` = `{ lines, items }`: every station plus notes, newest first, short keys (`t` title, `s` short,
+  `l` lines, `y` year, `k` kind, `m` meta, `x` stack/tags, `u` url, `d` summary ≤ 160 chars). ~100 items ≈ 15 KB.
+- The header **Search** link goes to `/search/`; with JS it (and Ctrl/Cmd+K, `/`) opens a `<dialog>` combobox
+  instead. Every typed word must match somewhere; title prefix > word start in title > short > meta/stack/
+  year/kind/line > summary; ties stay newest first. Turkish letters fold (ı/İ/I → i, ş → s, …) one char at a
+  time so highlights line up. Line chips filter; ↑/↓/Enter (Ctrl+Enter = new tab); Escape always closes the
+  dialog (a `type="search"` input would otherwise just clear itself).
+- On `/search/` the same UI mounts in the page, keeps `?q=` in the URL and hides the A–Z list while there's
+  a query. Phones get the dialog full screen.
 
 ## Line pages
 
