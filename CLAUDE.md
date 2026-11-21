@@ -249,8 +249,11 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Still unnamed: the 11 km "race" on 2019-03-31 (Sunday evening on the usual training loop), the
   "Delphi ride" days (2018-06-21…23, Cologne area → Eifel → Luxembourg), and the 10 km on 2024-05-18. Many
   other activities keep Strava's default names ("Morning Run").
-- The 2018 activities from April to September are on Strava twice (the `12946…` ids are a later re-import,
-  e.g. "Morning Run" next to "İzmir 9th September Half Marathon"); hide the copies with `hidden: true`.
+- **Duplicates:** the 2018 activities from April to September are on Strava twice (the `12946…` ids are a
+  later re-import). The sync's `dropDuplicates()` keeps the older upload of any two with the same sport and start
+  minute, in the list and in the weekly totals (11 copies on 2026-11-21). The copies are still on Strava;
+  deleting them there is Engin's call. Not caught: 2018-06-21 has a second "Morning Ride" (1653492474, 112 km,
+  starting 5 min after the 95 km race ride), maybe a second device.
 
 ## Cloudflare
 
