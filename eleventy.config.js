@@ -132,8 +132,10 @@ export default function (eleventyConfig) {
         url: `/distance/#a${a.id}`,
         kind: a.sport === "ride" ? "ride" : "race",
         meta: `${(a.distance_m / 1000).toFixed(1)} km`,
-        summary: "",
-        note: n ? n.content : "",
+        // the note is the file's raw Markdown (templateContent isn't ready while collections are built; the line
+        // page renders it with `md`); its text doubles as the summary, so the map card and search show it too
+        summary: n ? String(n.rawInput || "").replace(/[#*_`>\[\]]/g, "").replace(/\s+/g, " ").trim() : "",
+        note: n ? String(n.rawInput || "").trim() : "",
         photo: n && n.data.photo ? bundlePath(n.data.photo, n.inputPath) : null,
         photoAlt: (n && n.data.photo_alt) || "",
         activity: a,
