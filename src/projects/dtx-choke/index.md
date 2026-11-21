@@ -6,7 +6,7 @@ status: ongoing
 stack: ["Rust", "Win32", "Windows MIDI Services"]
 summary: "A tiny native app that makes Yamaha DTX PRO cymbal chokes work with Addictive Drums 2 in Ableton."
 featured: true
-draft: true  # seeded from the repo README: review, then set to false (or untick Draft in the CMS)
+draft: false
 ---
 The DTX PRO kit sends its cymbal Note Offs at the wrong moment for Addictive Drums 2, so grabbing a cymbal doesn't choke it. The usual fix is a Bome MIDI Translator preset plus a loopMIDI virtual port.
 
@@ -16,4 +16,3 @@ dtx-choke replaces both with one small Win32 app. It reads the kit through Windo
 - measured on a real kit: **0.04 ms** added latency, choke timing accurate to about 1 ms
 - tray icon shows whether the kit is connected
 
-*Draft: add a repo link once it's public.*

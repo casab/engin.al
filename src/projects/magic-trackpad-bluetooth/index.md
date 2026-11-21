@@ -10,7 +10,7 @@ featured: false
 links:
   - label: driver
     url: https://github.com/vitoplantamura/MagicTrackpad2ForWindows
-draft: true  # seeded from the repo README: review, then set to false (or untick Draft in the CMS)
+draft: false
 ---
 After a host-initiated Bluetooth pairing, the trackpad sometimes doesn't acknowledge the filter driver's first SET_FEATURE. Upstream sent it synchronously, with no timeout, on the PnP start path, so the HID collection hung and the touchpad didn't exist until the link dropped. With a KVM switching the pad between machines, that meant power-cycling it on every switch.
 

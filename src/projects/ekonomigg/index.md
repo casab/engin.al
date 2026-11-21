@@ -9,7 +9,7 @@ featured: false
 links:
   - label: site
     url: https://ekonomi.gg
-draft: true  # from GitHub (repo, README, commits, releases): review, then untick Draft
+draft: false
 ---
 Everyone in Turkey talks about prices. Ekonomigg turns that into a game: products and prices come from old A101, BİM and ŞOK flyers, and you guess the year, or on Hard the month too.
 
