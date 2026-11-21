@@ -109,6 +109,7 @@ export default function (eleventyConfig) {
       cover: item.data.cover ? bundlePath(item.data.cover, item.inputPath) : null,
       coverAlt: item.data.cover_alt || "",
       embed: item.data.embed_url || null,
+      tracklist: item.data.tracklist_url || null,
       bandcampId: item.data.bandcamp_id || null,
       data: { status: item.data.status, stack: item.data.stack || [] },
     });
@@ -132,7 +133,8 @@ export default function (eleventyConfig) {
       }));
     return [
       ...projects(api).map((p) => fromItem(p, "project", [p.data.stack && p.data.stack[0], toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
-      ...sound(api).map((p) => fromItem(p, "sound", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
+      // "tracklist only" wherever the meta shows (line page, map card, search): there's no recording to play
+      ...sound(api).map((p) => fromItem(p, "sound", [p.data.artist, p.data.kind, !p.data.embed_url && p.data.tracklist_url && "tracklist only", toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       // a gig without a recording of my own set is a stop too: artist and kind (dj set, live set) like a recording
       ...stops(api).map((p) => fromItem(p, "stop", [p.data.artist, p.data.kind, toDate(p.data.date).getUTCFullYear()].filter(Boolean).join(" · "))),
       ...races,

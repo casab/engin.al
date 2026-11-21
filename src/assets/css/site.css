@@ -251,6 +251,11 @@
   .player__play { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--line); color: var(--white); font-size: 0.8rem; }
   .player__facade:hover .player__play { background: var(--ink); }
   .player__label { display: block; font-weight: 650; }
+  /* which it is: a recording of the set, or a tracklist (other artists' tracks), which also looks different */
+  .player__kind { display: block; font-stretch: 125%; font-weight: 650; font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--line); }
+  .player--list { border-top-style: dashed; border-bottom-style: dashed; }
+  .player--list .player__play { background: transparent; color: var(--line); box-shadow: inset 0 0 0 2px var(--line); font-size: 1.1rem; }
+  .player--list .player__facade:hover .player__play { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }  .lp-players { display: grid; gap: 1.25rem; }
   .player iframe { width: 100%; border: 0; }
   .player iframe.h60 { height: 60px; } .player iframe.h120 { height: 120px; } .player iframe.h166 { height: 166px; } .player iframe.h320 { height: 320px; } .player iframe.h152 { height: 152px; } .player iframe.h352 { height: 352px; }
   .player iframe.video { aspect-ratio: 16 / 9; height: auto; }

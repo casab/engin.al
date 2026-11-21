@@ -113,7 +113,8 @@ collections:
           - { label: "L4 Distance", value: distance }
       - { name: venue, label: Where, widget: string, required: false }
       - { name: summary, label: Summary, widget: text, required: false }
-      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "The recording of this set or track itself (one SoundCloud track, Spotify, Mixcloud, YouTube or Bandcamp), shown as a click-to-load player. Not a SoundCloud playlist (/sets/): put a tracklist or a whole night's recordings under Links. A gig with no recording of your own set belongs in Milestones." }
+      - { name: embed_url, label: Listen link, widget: string, required: false, hint: "The recording of this set or track itself (one SoundCloud track, Spotify, Mixcloud, YouTube or Bandcamp), shown as a click-to-load player. Not a SoundCloud playlist (/sets/): a tracklist goes in Tracklist, a whole night's recordings under Links." }
+      - { name: tracklist_url, label: Tracklist, widget: string, required: false, hint: "A playlist of the tracks you played (SoundCloud /sets/ or Spotify). Shown as a player marked 'Tracklist, not a recording', after the recording or instead of it. A gig with neither belongs in Milestones." }
       - { name: bandcamp_id, label: Bandcamp album/track id, widget: string, required: false, hint: "Bandcamp players need the numeric id (Share → Embed)." }
       - { name: gear, label: Gear used, widget: list, required: false }
       - name: links
