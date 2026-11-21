@@ -3,7 +3,7 @@
  "activities": [
   {
    "id": 18447876941,
-   "name": "Morning Run",
+   "name": "Salomon Çeşme Half Marathon 2026",
    "sport": "run",
    "sport_type": "Run",
    "date": "2026-05-10T08:03:21Z",
@@ -11,7 +11,7 @@
    "moving_s": 8799,
    "elapsed_s": 8864,
    "elev_m": 121,
-   "race": false,
+   "race": true,
    "has_route": true
   },
   {
@@ -42,7 +42,7 @@
   },
   {
    "id": 14442558520,
-   "name": "Salomon Cesme Half Marathon 2025",
+   "name": "Salomon Çeşme Half Marathon 2025",
    "sport": "run",
    "sport_type": "Run",
    "date": "2025-05-11T08:00:39Z",
@@ -81,7 +81,7 @@
   },
   {
    "id": 12754483642,
-   "name": "Morning Run",
+   "name": "Gökova Half Marathon 2024",
    "sport": "run",
    "sport_type": "Run",
    "date": "2024-10-27T08:17:50Z",
@@ -89,7 +89,7 @@
    "moving_s": 7337,
    "elapsed_s": 7382,
    "elev_m": 261,
-   "race": false,
+   "race": true,
    "has_route": true
   },
   {
@@ -159,7 +159,7 @@
   },
   {
    "id": 11327412284,
-   "name": "Salomon Cesme Half Marathon",
+   "name": "Salomon Çeşme Half Marathon 2024",
    "sport": "run",
    "sport_type": "Run",
    "date": "2024-05-04T08:02:07Z",
@@ -198,7 +198,7 @@
   },
   {
    "id": 4018596676,
-   "name": "9 Eylül Yarı Maratonu 2020",
+   "name": "9 Eylül İzmir Half Marathon 2020",
    "sport": "run",
    "sport_type": "Run",
    "date": "2020-09-06T07:38:52Z",
@@ -224,7 +224,7 @@
   },
   {
    "id": 2690767586,
-   "name": "9 Eylül Yarı Maratonu 2019",
+   "name": "9 Eylül İzmir Half Marathon 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-09-08T08:04:10Z",
@@ -237,7 +237,7 @@
   },
   {
    "id": 2670065804,
-   "name": "Garmin Runfire Salt Lake 20km",
+   "name": "Runfire Salt Lake 20K 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-08-31T09:00:55Z",
@@ -276,7 +276,7 @@
   },
   {
    "id": 2379007865,
-   "name": "19 Mayıs 10km Yol Koşusu",
+   "name": "19 Mayıs 10K Yol Koşusu 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-05-19T07:59:36Z",
@@ -289,7 +289,7 @@
   },
   {
    "id": 2360622978,
-   "name": "Running",
+   "name": "Zübeyde Hanım Koşusu 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-05-12T10:02:28Z",
@@ -302,7 +302,7 @@
   },
   {
    "id": 2344376712,
-   "name": "Wings For Life 2019",
+   "name": "Wings for Life World Run 2019, İzmir",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-05-05T14:00:08Z",
@@ -315,7 +315,7 @@
   },
   {
    "id": 2324914239,
-   "name": "Global Bodrum Run",
+   "name": "Global Bodrum Run 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-04-28T09:01:37Z",
@@ -380,7 +380,7 @@
   },
   {
    "id": 2187613281,
-   "name": "Runatolia Half Marathon",
+   "name": "Runatolia Half Marathon 2019",
    "sport": "run",
    "sport_type": "Run",
    "date": "2019-03-03T09:16:18Z",
@@ -432,7 +432,7 @@
   },
   {
    "id": 1946096854,
-   "name": "Atadan Anaya Saygı Koşusu",
+   "name": "Atadan Anaya Saygı Koşusu 2018",
    "sport": "run",
    "sport_type": "Run",
    "date": "2018-11-04T09:11:21Z",
@@ -458,7 +458,7 @@
   },
   {
    "id": 1934200241,
-   "name": "Dalyan Caretta Run Half Marathon",
+   "name": "Dalyan Caretta Run Half Marathon 2018",
    "sport": "run",
    "sport_type": "Run",
    "date": "2018-10-28T09:00:00Z",
@@ -484,7 +484,7 @@
   },
   {
    "id": 1918225871,
-   "name": "EÇEV Eğitime Pedalla Bisiklet Turu",
+   "name": "EÇEV Eğitime Pedalla Bisiklet Turu 2018",
    "sport": "ride",
    "sport_type": "Ride",
    "date": "2018-10-21T09:20:33Z",
@@ -523,7 +523,7 @@
   },
   {
    "id": 1889086727,
-   "name": "Bodrum Half Marathon",
+   "name": "Bodrum Half Marathon 2018",
    "sport": "run",
    "sport_type": "Run",
    "date": "2018-10-07T08:07:03Z",
@@ -575,7 +575,7 @@
   },
   {
    "id": 1813356268,
-   "name": "İzmir 9th September Half Marathon",
+   "name": "9 Eylül İzmir Half Marathon 2018",
    "sport": "run",
    "sport_type": "Run",
    "date": "2018-09-02T08:04:27Z",
