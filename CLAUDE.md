@@ -147,7 +147,8 @@ vertical line diagram; tablets and up get the map. Long titles need a `short` la
 - Engin (2026-11-21): jobs are periods, not instants; "it would look weird if we only put the starting time".
   A milestone with `end` (YYYY-MM-DD or `present`) is a period. `buildStations()` adds `end` and `range`
   ("Dec 2021 – Sep 2024", "May 2025 – now"); `when` overrides the range when only years are known
-  ("2012 – 2017"), and then `date`/`end` only place it (Jan 1 of the years). Meta is `role · range`.
+  ("2012 – 2017"), and then `date`/`end` only place it (Jan 1 of the years). Meta is `role · range`. A single
+  milestone known only to the year can use `when` too (`when: "2009"`), so no invented month is shown.
 - The station sits at its start like any other. `buildNetwork()` also returns `bars`: a strip under the year
   axis (the lanes are too full of bends and labels), one bar per period from its station to where the end date
   falls between columns (`xAt`, interpolated by date), or to the terminus with an arrow while it runs.

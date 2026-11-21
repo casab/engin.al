@@ -94,9 +94,10 @@ export default function (eleventyConfig) {
   };
   eleventyConfig.addWatchTarget("src/_data/strava/");
   // Periods (jobs, degrees): a milestone with `end` (a date or "present") runs from `date` to `end`. `when`
-  // overrides the shown range when only years are known ("2012 – 2017"); the dates then only place it.
+  // overrides the shown range when only years are known ("2012 – 2017"); the dates then only place it. A single
+  // milestone known only to the year uses `when` too ("2009"), so no invented month is shown.
   const monthYear = (d) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, month: "short", year: "numeric" }).format(toDate(d));
-  const rangeOf = (data) => (!data.end ? null : data.when || `${monthYear(data.date)} – ${data.end === "present" ? "now" : monthYear(data.end)}`);
+  const rangeOf = (data) => data.when || (!data.end ? null : `${monthYear(data.date)} – ${data.end === "present" ? "now" : monthYear(data.end)}`);
   const endOf = (data) => (!data.end ? null : data.end === "present" ? "present" : toDate(data.end));
   const buildStations = (api) => {
     const fromItem = (item, kind, meta) => ({
